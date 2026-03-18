@@ -104,11 +104,15 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
     section: K,
     data: any
   ) => {
-    setPresentationState((prevState) => {
+  const updateState = <K extends keyof PresentationState>(
+    section: K,
+    data: any
+  ) => {
+    // We change "setPresentationState" to "setState" here:
+    setState((prevState) => {
       const currentSection = prevState[section];
 
       // If the section is an object, we spread it. 
-      // If it's a primitive (like waterSource string), we just update it directly.
       if (typeof currentSection === 'object' && currentSection !== null) {
         return {
           ...prevState,
