@@ -100,14 +100,31 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<PresentationState>(initialState);
 
   // A dynamic function to update any section of the state
-  const updateState = (section: keyof PresentationState, data: any) => {
-    setState((prevState) => ({
-      ...prevState,
-      [section]: {
-        ...prevState[section],
-        ...data,
-      },
-    }));
+  const updateState = <K extends keyof PresentationState>(
+    section: K,
+    data: any
+  ) => {
+    setPresentationState((prevState) => {
+      const currentSection = prevState[section];
+
+      // If the section is an object, we spread it. 
+      // If it's a primitive (like waterSource string), we just update it directly.
+      if (typeof currentSection === 'object' && currentSection !== null) {
+        return {
+          ...prevState,
+          [section]: {
+            ...currentSection,
+            ...data,
+          },
+        };
+      }
+
+      // Fallback for non-object fields (like waterSource)
+      return {
+        ...prevState,
+        [section]: data,
+      };
+    });
   };
 
   // Useful for resetting the form after a presentation is emailed and completed
