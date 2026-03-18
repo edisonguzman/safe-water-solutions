@@ -27,10 +27,10 @@ export interface WaterTestResults {
   ironFerrous: string;
   ironFerric: string;
   hydrogenSulfide: string;
-  appearance: string[]; // e.g., ['Clear', 'Sediment']
-  pipeSize: string;     // e.g., '3/4"', '1"'
-  pipeType: string;     // e.g., 'Copper', 'Pex'
-  wellPumpDeliveryRate: string; // GPM
+  appearance: string[];
+  pipeSize: string;
+  pipeType: string;
+  wellPumpDeliveryRate: string;
 }
 
 export interface FinancialInputs {
@@ -39,7 +39,6 @@ export interface FinancialInputs {
   weeklyGroceryBill: number;
 }
 
-// Define the shape of our entire presentation state
 interface PresentationState {
   waterSource: WaterSourceType;
   prospectInfo: ProspectInfo;
@@ -47,7 +46,6 @@ interface PresentationState {
   financialInputs: FinancialInputs;
 }
 
-// Define the shape of the context, including the update function
 interface PresentationContextType {
   state: PresentationState;
   updateState: (section: keyof PresentationState, data: any) => void;
@@ -67,7 +65,7 @@ const initialState: PresentationState = {
     zip: "",
     phone: "",
     email: "",
-    date: new Date().toISOString().split('T')[0], // Defaults to today
+    date: new Date().toISOString().split('T')[0],
     householdSize: 1,
   },
   waterTestResults: {
@@ -90,7 +88,7 @@ const initialState: PresentationState = {
   },
 };
 
-// --- Context Initialization ---
+// --- Context ---
 
 const PresentationContext = createContext<PresentationContextType | undefined>(undefined);
 
@@ -99,21 +97,14 @@ const PresentationContext = createContext<PresentationContextType | undefined>(u
 export const PresentationProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<PresentationState>(initialState);
 
-  // A dynamic function to update any section of the state
   const updateState = <K extends keyof PresentationState>(
     section: K,
     data: any
   ) => {
-  const updateState = <K extends keyof PresentationState>(
-    section: K,
-    data: any
-  ) => {
-    // We change "setPresentationState" to "setState" here:
     setState((prevState) => {
       const currentSection = prevState[section];
 
-      // If the section is an object, we spread it. 
-      if (typeof currentSection === 'object' && currentSection !== null) {
+      if (typeof currentSection === 'object' && currentSection !== null && !Array.isArray(currentSection)) {
         return {
           ...prevState,
           [section]: {
@@ -123,7 +114,6 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
         };
       }
 
-      // Fallback for non-object fields (like waterSource)
       return {
         ...prevState,
         [section]: data,
@@ -131,7 +121,6 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  // Useful for resetting the form after a presentation is emailed and completed
   const resetState = () => {
     setState(initialState);
   };
@@ -143,7 +132,7 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// --- Custom Hook for Easy Access ---
+// --- Custom Hook ---
 
 export const usePresentation = () => {
   const context = useContext(PresentationContext);
