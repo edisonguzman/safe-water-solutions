@@ -1,30 +1,36 @@
 "use client";
 
 import React, { useState } from "react";
-// This is the line that was missing or broken!
-import { usePresentation } from "@/app/context/PresentationContext";
+import { PresentationProvider, usePresentation } from "@/app/context/PresentationContext";
+// Import Clerk components if you are using Clerk for auth
+import { SignOutButton } from "@clerk/nextjs";
 
-// We will build these individual slide components next. 
-// For now, I've created inline placeholders so the app compiles successfully.
 import Slide1_ProspectInfo from "@/app/components/presentation/Slide1_ProspectInfo";
 import Slide2_WaterCosts from "@/app/components/presentation/Slide2_WaterCosts";
 import Slide3_GrocerySavings from "@/app/components/presentation/Slide3_GrocerySavings";
 import Slide4_DailySavings from "@/app/components/presentation/Slide4_DailySavings";
 import Slide5_Summary from "@/app/components/presentation/Slide5_Summary";
 
-export default function PresentationViewer() {
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  // Now Next.js knows exactly where usePresentation comes from
-  const { state } = usePresentation();
+// Create a wrapper component to ensure the Context is available
+export default function PresentationPage() {
+  return (
+    <PresentationProvider>
+      <PresentationViewer />
+    </PresentationProvider>
+  );
+}
 
-  // As we build the real slides, we will replace these placeholders 
-  // with the actual imported components.
+function PresentationViewer() {
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const { state } = usePresentation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const slides = [
-   <Slide1_ProspectInfo key="s1" />,
-   <Slide2_WaterCosts key="s2" />,
-   <Slide3_GrocerySavings key="s3" />,
-   <Slide4_DailySavings key="s4" />,
-   <Slide5_Summary key="s5" />
+    <Slide1_ProspectInfo key="s1" />,
+    <Slide2_WaterCosts key="s2" />,
+    <Slide3_GrocerySavings key="s3" />,
+    <Slide4_DailySavings key="s4" />,
+    <Slide5_Summary key="s5" />
   ];
 
   const totalSlides = slides.length;
@@ -40,7 +46,6 @@ export default function PresentationViewer() {
       setCurrentSlideIndex((prev) => prev - 1);
     }
   };
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmitToCRM = async () => {
     setIsSubmitting(true);
@@ -48,16 +53,15 @@ export default function PresentationViewer() {
       const response = await fetch('/api/prospects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(state), // We pass the entire global context state!
+        body: JSON.stringify(state),
       });
 
       const data = await response.json();
 
       if (data.success) {
         alert("Success! Prospect saved to CRM.");
-        // Next step will be adding the Resend email trigger here
       } else {
-        alert("Error saving to database. Check console.");
+        alert("Error saving to database.");
       }
     } catch (error) {
       console.error("Submission error:", error);
@@ -70,10 +74,16 @@ export default function PresentationViewer() {
   return (
     <div className="flex flex-col h-screen w-full bg-white text-gray-900 overflow-hidden font-sans">
       
-{/* Top Header */}
+      {/* Top Header */}
       <header className="bg-blue-600 text-white p-4 shadow-md z-10">
-        <div className="flex justify-center items-center max-w-6xl mx-auto w-full">
+        <div className="flex justify-between items-center max-w-6xl mx-auto w-full">
+          <div className="w-24"></div> {/* Spacer for centering */}
           <h1 className="text-xl font-bold tracking-wide">Peace of Mind in Every Drop</h1>
+          <div className="w-24 text-right">
+            <SignOutButton>
+              <button className="text-xs bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded">Logout</button>
+            </SignOutButton>
+          </div>
         </div>
       </header>
 
@@ -84,7 +94,7 @@ export default function PresentationViewer() {
         </div>
       </main>
 
-      {/* Bottom Navigation Controls */}
+{/* Bottom Navigation Controls */}
       <footer className="bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
         <div className="flex justify-between items-center max-w-6xl mx-auto w-full">
           <button
@@ -99,7 +109,9 @@ export default function PresentationViewer() {
             ← Previous
           </button>
 
-         {currentSlideIndex === totalSlides - 1 ? (
+          {/* Progress indicator removed from here */}
+
+          {currentSlideIndex === totalSlides - 1 ? (
             <button
               onClick={handleSubmitToCRM}
               disabled={isSubmitting}
@@ -119,7 +131,6 @@ export default function PresentationViewer() {
           )}
         </div>
       </footer>
-
     </div>
   );
 }
