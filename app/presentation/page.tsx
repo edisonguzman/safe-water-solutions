@@ -13,6 +13,7 @@ import Slide_WaterTestResults from "@/app/components/presentation/Slide_WaterTes
 import Slide3_GrocerySavings from "@/app/components/presentation/Slide3_GrocerySavings";
 import Slide4_DailySavings from "@/app/components/presentation/Slide4_DailySavings";
 import Slide_HomeBenefits from "@/app/components/presentation/Slide_HomeBenefits";
+import Slide_Summary from "@/app/components/presentation/Slide_Summary";
 import Slide5_Summary from "@/app/components/presentation/Slide5_Summary";
 
 
@@ -53,6 +54,7 @@ function PresentationViewer() {
     <Slide3_GrocerySavings key="s7" />,
     <Slide4_DailySavings key="s8" />,
     <Slide_HomeBenefits key="s_benefits" onNext={handleNext} />,
+    <Slide_Summary key="summary" />,
     <Slide5_Summary key="s9" />
   ];
 
