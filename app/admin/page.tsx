@@ -1,84 +1,141 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { sql } from "@/app/lib/db";
+import { Users, Droplets, TrendingUp, DollarSign, ShieldCheck } from "lucide-react";
 
 export default async function AdminDashboard() {
   const client = await clerkClient();
   
-  // Fetch all users from your Clerk instance
+  // 1. Fetch Clerk Users
   const response = await client.users.getUserList();
   const users = response.data;
 
-  // Server Action to handle the approval toggle
+  // 2. Fetch Neon Analytics
+  const statsResult = await sql`
+    SELECT 
+      COUNT(*) as total_prospects,
+      COUNT(DISTINCT sales_rep_id) as active_reps,
+      AVG(NULLIF(hardness, '')::numeric) as avg_hardness,
+      SUM(((NULLIF(weekly_grocery_bill, 0) * 4 * NULLIF(product_percentage, 0) * 0.75) + NULLIF(monthly_bottled_water_cost, 0))) as total_savings
+    FROM prospects
+  `;
+  const stats = statsResult[0];
+
+  // Server Action for Clerk Approval
   async function toggleApproval(userId: string, currentStatus: boolean) {
     "use server";
     const client = await clerkClient();
-    
     await client.users.updateUserMetadata(userId, {
-      publicMetadata: {
-        approved: !currentStatus,
-      },
+      publicMetadata: { approved: !currentStatus },
     });
-    
-    // Refresh the page to show updated status
     revalidatePath("/admin");
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8 text-blue-900">User Management</h1>
+    <div className="p-8 max-w-7xl mx-auto space-y-12 bg-slate-50 min-h-screen">
       
-      <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
-        <table className="w-full text-left">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-4 font-semibold text-gray-700">Name</th>
-              <th className="px-6 py-4 font-semibold text-gray-700">Email</th>
-              <th className="px-6 py-4 font-semibold text-gray-700">Status</th>
-              <th className="px-6 py-4 font-semibold text-gray-700 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {users.map((user) => {
-              const isApproved = !!user.publicMetadata.approved;
-              const email = user.emailAddresses[0]?.emailAddress;
-              
-              return (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    {user.firstName} {user.lastName}
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">{email}</td>
-                  <td className="px-6 py-4">
-                    {isApproved ? (
-                      <span className="px-3 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-                        Approved
-                      </span>
-                    ) : (
-                      <span className="px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-full">
-                        Pending
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <form action={toggleApproval.bind(null, user.id, isApproved)}>
-                      <button
-                        type="submit"
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                          isApproved 
-                            ? "bg-red-50 text-red-600 hover:bg-red-100" 
-                            : "bg-blue-600 text-white hover:bg-blue-700"
-                        }`}
-                      >
-                        {isApproved ? "Revoke Access" : "Approve User"}
-                      </button>
-                    </form>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      {/* SECTION 1: EXECUTIVE OVERVIEW */}
+      <header>
+        <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Executive Overview</h1>
+        <p className="text-slate-500 font-medium">System-wide performance and water quality metrics.</p>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <StatCard 
+          title="Total Reports" 
+          value={stats.total_prospects || 0} 
+          icon={<Droplets className="text-blue-600" />} 
+        />
+        <StatCard 
+          title="Active Sales Reps" 
+          value={stats.active_reps || 0} 
+          icon={<Users className="text-purple-600" />} 
+        />
+        <StatCard 
+          title="Avg. Hardness" 
+          value={`${Math.round(stats.avg_hardness || 0)} GPG`} 
+          icon={<TrendingUp className="text-orange-600" />} 
+        />
+        <StatCard 
+          title="Total Savings Found" 
+          value={`$${Math.round(stats.total_savings || 0).toLocaleString()}`} 
+          icon={<DollarSign className="text-green-600" />} 
+          subtitle="Projected Monthly"
+        />
       </div>
+
+      {/* SECTION 2: USER MANAGEMENT */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-4">
+          <ShieldCheck className="text-blue-900" />
+          <h2 className="text-2xl font-bold text-blue-900">User Access Management</h2>
+        </div>
+
+        <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider">Name</th>
+                <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider">Email</th>
+                <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider">Status</th>
+                <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {users.map((user) => {
+                const isApproved = !!user.publicMetadata.approved;
+                const email = user.emailAddresses[0]?.emailAddress;
+                
+                return (
+                  <tr key={user.id} className="hover:bg-blue-50/50 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-slate-900">
+                      {user.firstName} {user.lastName}
+                    </td>
+                    <td className="px-6 py-4 text-slate-600">{email}</td>
+                    <td className="px-6 py-4">
+                      {isApproved ? (
+                        <span className="px-3 py-1 text-xs font-black uppercase bg-green-100 text-green-700 rounded-full">
+                          Approved
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 text-xs font-black uppercase bg-amber-100 text-amber-700 rounded-full">
+                          Pending
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <form action={toggleApproval.bind(null, user.id, isApproved)}>
+                        <button
+                          type="submit"
+                          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm ${
+                            isApproved 
+                              ? "bg-white text-red-600 border border-red-200 hover:bg-red-50" 
+                              : "bg-blue-600 text-white hover:bg-blue-700"
+                          }`}
+                        >
+                          {isApproved ? "Revoke Access" : "Approve Rep"}
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// Internal Helper Component
+function StatCard({ title, value, icon, subtitle }: any) {
+  return (
+    <div className="bg-white p-6 rounded-3xl shadow-md border border-slate-100 flex flex-col">
+      <div className="p-3 bg-slate-50 rounded-2xl w-fit mb-4">{icon}</div>
+      <h3 className="text-slate-400 font-bold text-xs uppercase tracking-widest">{title}</h3>
+      <p className="text-3xl font-black text-slate-900 mt-1">{value}</p>
+      {subtitle && <p className="text-[10px] text-green-600 font-black mt-1 uppercase tracking-tighter">{subtitle}</p>}
     </div>
   );
 }
