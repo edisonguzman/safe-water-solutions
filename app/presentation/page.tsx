@@ -15,6 +15,7 @@ import Slide4_DailySavings from "@/app/components/presentation/Slide4_DailySavin
 import Slide_HomeBenefits from "@/app/components/presentation/Slide_HomeBenefits";
 import Slide_Summary from "@/app/components/presentation/Slide_Summary";
 import Slide5_Summary from "@/app/components/presentation/Slide5_Summary";
+import Slide_ThankYou from "@/app/components/presentation/Slide_ThankYou";
 
 
 export default function PresentationPage() {
@@ -55,30 +56,60 @@ function PresentationViewer() {
     <Slide4_DailySavings key="s8" />,
     <Slide_HomeBenefits key="s_benefits" onNext={handleNext} />,
     <Slide_Summary key="summary" />,
-    <Slide5_Summary key="s9" />
+    <Slide5_Summary key="s9" />,
+    <Slide_ThankYou key="thanks" />
   ];
 
   const totalSlides = slides.length;
 
   const handleSubmitToCRM = async () => {
     setIsSubmitting(true);
+
+    // 1. Calculate the values needed for the email report
+    const weeklyGrocery = state.financialInputs?.weeklyGroceryBill || 0;
+    const productPct = state.financialInputs?.productPercentage || 0.15;
+    const weeklyBottled = state.financialInputs?.weeklyBottledWaterCost || 0;
+    const monthlyFilter = state.financialInputs?.monthlyFilterCost || 0;
+
+    const monthlySavings = ((weeklyGrocery * productPct) * 4 * 0.75) + 
+                           ((weeklyBottled * 4) + monthlyFilter);
+
+    const savingsData = {
+      monthly: monthlySavings,
+      yearly: monthlySavings * 12
+    };
+
     try {
-      const response = await fetch('/api/prospects', {
+      // 2. Save to your Neon Database
+      const crmResponse = await fetch('/api/prospects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(state),
       });
 
-      const data = await response.json();
+      // 3. Trigger the Resend Email
+      // Note: We are passing 'state' and 'savings' as separate keys
+      const emailResponse = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          state, 
+          savings: savingsData 
+        }),
+      });
 
-      if (data.success) {
-        alert("Success! Prospect saved to CRM.");
+      const crmResult = await crmResponse.json();
+      const emailResult = await emailResponse.json();
+
+      if (crmResult.success) {
+        // 4. Move to the Thank You slide automatically on success
+        handleNext();
       } else {
-        alert("Error saving to database.");
+        alert("There was an issue saving to the CRM, but the presentation is complete.");
       }
     } catch (error) {
-      console.error("Submission error:", error);
-      alert("A network error occurred.");
+      console.error("Final Submission Error:", error);
+      alert("A network error occurred. Please check your connection.");
     } finally {
       setIsSubmitting(false);
     }
