@@ -4,15 +4,19 @@ import { auth } from "@clerk/nextjs/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // Change 1: Define as a Promise
 ) {
   try {
     const { userId } = await auth();
     if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
+    // Change 2: Await the params before using them
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
+
     const prospect = await sql`
       SELECT * FROM prospects 
-      WHERE id = ${params.id} AND sales_rep_id = ${userId}
+      WHERE id = ${id} AND sales_rep_id = ${userId}
       LIMIT 1
     `;
 
@@ -22,6 +26,7 @@ export async function GET(
 
     return NextResponse.json(prospect[0]);
   } catch (error) {
+    console.error('API Error:', error);
     return NextResponse.json({ error: 'Failed to fetch prospect' }, { status: 500 });
   }
 }
