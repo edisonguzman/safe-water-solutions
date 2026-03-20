@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { PresentationProvider, usePresentation } from "@/app/context/PresentationContext";
 import { SignOutButton } from "@clerk/nextjs";
-
 // Import All Slide Components
 import Slide1_ProspectInfo from "@/app/components/presentation/Slide1_ProspectInfo";
 import Slide2_HelpRequest from "@/app/components/presentation/Slide2_HelpRequest";
@@ -13,7 +12,9 @@ import Slide_ThreeTypes from "@/app/components/presentation/Slide_ThreeTypes";
 import Slide_WaterTestResults from "@/app/components/presentation/Slide_WaterTestResults";
 import Slide3_GrocerySavings from "@/app/components/presentation/Slide3_GrocerySavings";
 import Slide4_DailySavings from "@/app/components/presentation/Slide4_DailySavings";
+import Slide_HomeBenefits from "@/app/components/presentation/Slide_HomeBenefits";
 import Slide5_Summary from "@/app/components/presentation/Slide5_Summary";
+
 
 export default function PresentationPage() {
   return (
@@ -51,6 +52,7 @@ function PresentationViewer() {
     <Slide_WaterTestResults key="s6" />,
     <Slide3_GrocerySavings key="s7" />,
     <Slide4_DailySavings key="s8" />,
+    <Slide_HomeBenefits key="s_benefits" onNext={handleNext} />,
     <Slide5_Summary key="s9" />
   ];
 
