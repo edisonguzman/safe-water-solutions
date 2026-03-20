@@ -24,15 +24,17 @@ interface WaterTestResults {
   hardness: string;
   ph: string;
   chlorine: string;
-  iron: string;      // Added
-  nitrates: string;  // Added
+  iron: string;
+  nitrates: string;
 }
 
-// NEW: Financial Inputs for Savings Calculations
+// UPDATED: Added missing fields required by Slide2_WaterCosts
 interface FinancialInputs {
   weeklyGroceryBill: number;
   productPercentage: number;
   monthlyBottledWaterCost: number;
+  weeklyBottledWaterCost: number; // Added back for Slide2 logic
+  monthlyFilterCost: number;      // Added back for Slide2 logic
 }
 
 interface PresentationState {
@@ -42,7 +44,7 @@ interface PresentationState {
   waterCostPreferences: {
     buysBottled: boolean;
   };
-  financialInputs: FinancialInputs; // Added to State
+  financialInputs: FinancialInputs;
 }
 
 // 2. Initial State
@@ -68,14 +70,18 @@ const initialState: PresentationState = {
     hardness: "",
     ph: "",
     chlorine: "",
+    iron: "",
+    nitrates: "",
   },
   waterCostPreferences: {
     buysBottled: false,
   },
   financialInputs: {
     weeklyGroceryBill: 0,
-    productPercentage: 0.15, // Defaulting to 15% as per your slide logic
+    productPercentage: 0.15,
     monthlyBottledWaterCost: 0,
+    weeklyBottledWaterCost: 0, // Initialized
+    monthlyFilterCost: 0,      // Initialized
   },
 };
 
@@ -85,7 +91,7 @@ type Action =
   | { type: "UPDATE_PROSPECT"; payload: Partial<ProspectInfo> }
   | { type: "UPDATE_COST_PREFS"; payload: Partial<{ buysBottled: boolean }> }
   | { type: "UPDATE_TEST"; payload: Partial<WaterTestResults> }
-  | { type: "UPDATE_FINANCIAL"; payload: Partial<FinancialInputs> }; // Added Action
+  | { type: "UPDATE_FINANCIAL"; payload: Partial<FinancialInputs> };
 
 function presentationReducer(state: PresentationState, action: Action): PresentationState {
   switch (action.type) {
@@ -130,7 +136,7 @@ export function PresentationProvider({ children }: { children: ReactNode }) {
     if (section === "prospectInfo") dispatch({ type: "UPDATE_PROSPECT", payload: data });
     if (section === "waterTestResults") dispatch({ type: "UPDATE_TEST", payload: data });
     if (section === "waterCostPreferences") dispatch({ type: "UPDATE_COST_PREFS", payload: data });
-    if (section === "financialInputs") dispatch({ type: "UPDATE_FINANCIAL", payload: data }); // Added Dispatch
+    if (section === "financialInputs") dispatch({ type: "UPDATE_FINANCIAL", payload: data });
   }, []);
 
   const value = useMemo(() => ({ state, updateState }), [state, updateState]);

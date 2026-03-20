@@ -13,8 +13,9 @@ export default function Slide2_WaterCosts() {
   };
 
   // The live math calculation based on the PDF formula
-  const weeklyBottled = state.financialInputs.weeklyBottledWaterCost;
-  const monthlyFilter = state.financialInputs.monthlyFilterCost;
+  // Note: Values are now mapped to the updated Context keys
+  const weeklyBottled = state.financialInputs.weeklyBottledWaterCost || 0;
+  const monthlyFilter = state.financialInputs.monthlyFilterCost || 0;
   const totalMonthlyCost = (weeklyBottled * 4) + monthlyFilter;
 
   return (
