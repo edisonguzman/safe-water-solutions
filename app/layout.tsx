@@ -62,8 +62,8 @@ export default async function RootLayout({
               </div>
 
               <div className="flex items-center gap-4">
-                <UserButton afterSignOutUrl="/sign-in" />
-              </div>
+  <UserButton />
+</div>
             </nav>
           )}
 
