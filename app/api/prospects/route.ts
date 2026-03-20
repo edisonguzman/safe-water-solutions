@@ -1,55 +1,58 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/app/lib/db';
+import { auth } from "@clerk/nextjs/server";
 
 export async function POST(request: Request) {
   try {
-    // 1. Parse the incoming JSON data from the frontend presentation
-    const body = await request.json();
+    const { userId } = await auth();
     
-    // Destructure exactly how we set it up in the PresentationContext
+    // 1. Parse the incoming JSON data
+    const body = await request.json();
     const { waterSource, prospectInfo, waterTestResults, financialInputs } = body;
 
-    // TODO: Once Clerk auth is fully active, this will be the actual logged-in user's ID.
-    // For testing right now, we will use a placeholder so the database accepts it.
-    const salesRepId = 'test_rep_123'; 
+    // Use the actual logged-in rep's ID
+    const salesRepId = userId || 'unauthenticated_rep'; 
 
-    // 2. Insert the data into the Neon PostgreSQL database
+    // 2. Insert data into Neon using your existing sql template style
+    // We are updating the column names to match the new Slide 1 and Water Test Slide
     const result = await sql`
       INSERT INTO prospects (
         sales_rep_id,
-        partner1_name, 
-        partner2_name, 
-        address, 
-        email,
-        household_size, 
-        water_source,
-        tds, 
-        hardness, 
-        ph, 
-        chlorine, 
-        weekly_bottled_water_cost, 
-        monthly_filter_cost, 
-        weekly_grocery_bill
+        title1, first_name1, last_name1,
+        title2, first_name2, last_name2,
+        address, city, state, zip, phone, email,
+        household_size, water_source,
+        tds, hardness, ph, chlorine, iron, nitrates,
+        weekly_grocery_bill, product_percentage
       ) VALUES (
         ${salesRepId},
-        ${prospectInfo.partner1Name || ''}, 
-        ${prospectInfo.partner2Name || ''}, 
+        ${prospectInfo.title1 || ''}, 
+        ${prospectInfo.firstName1 || ''}, 
+        ${prospectInfo.lastName1 || ''},
+        ${prospectInfo.title2 || ''}, 
+        ${prospectInfo.firstName2 || ''}, 
+        ${prospectInfo.lastName2 || ''},
         ${prospectInfo.address || ''},
+        ${prospectInfo.city || ''},
+        ${prospectInfo.state || ''},
+        ${prospectInfo.zip || ''},
+        ${prospectInfo.phone || ''},
         ${prospectInfo.email || ''},
         ${prospectInfo.householdSize || 1}, 
         ${waterSource || null},
         ${waterTestResults.tds || ''}, 
         ${waterTestResults.hardness || ''}, 
         ${waterTestResults.ph || ''}, 
-        ${waterTestResults.chlorine || ''}, 
-        ${financialInputs.weeklyBottledWaterCost || 0}, 
-        ${financialInputs.monthlyFilterCost || 0}, 
-        ${financialInputs.weeklyGroceryBill || 0}
+        ${waterTestResults.chlorine || ''},
+        ${waterTestResults.iron || ''},
+        ${waterTestResults.nitrates || ''},
+        ${financialInputs.weeklyGroceryBill || 0},
+        ${financialInputs.productPercentage || 0.15}
       )
       RETURNING id;
     `;
 
-    // 3. Send a success response back to the frontend with the new Database ID
+    // 3. Send a success response
     return NextResponse.json({ 
       success: true, 
       message: "Prospect successfully saved to Custom CRM",

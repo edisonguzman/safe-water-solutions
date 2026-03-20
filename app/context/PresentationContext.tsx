@@ -1,71 +1,66 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useReducer, ReactNode, useCallback, useMemo } from "react";
 
-// --- Type Definitions ---
-
-export type WaterSourceType = "Well Water" | "City Water" | null;
-
-export interface ProspectInfo {
-  partner1Name: string;
-  partner2Name: string;
+// 1. Define the Shape of your Data
+interface ProspectInfo {
+  title1: string;
+  firstName1: string;
+  lastName1: string;
+  title2: string;
+  firstName2: string;
+  lastName2: string;
   address: string;
   city: string;
   state: string;
   zip: string;
   phone: string;
   email: string;
-  date: string;
   householdSize: number;
 }
 
-export interface WaterTestResults {
+interface WaterTestResults {
   tds: string;
   hardness: string;
   ph: string;
   chlorine: string;
-  ironFerrous: string;
-  ironFerric: string;
-  hydrogenSulfide: string;
-  appearance: string[];
-  pipeSize: string;
-  pipeType: string;
-  wellPumpDeliveryRate: string;
+  iron: string;      // Added
+  nitrates: string;  // Added
 }
 
-export interface FinancialInputs {
-  weeklyBottledWaterCost: number;
-  monthlyFilterCost: number;
+// NEW: Financial Inputs for Savings Calculations
+interface FinancialInputs {
   weeklyGroceryBill: number;
+  productPercentage: number;
+  monthlyBottledWaterCost: number;
 }
 
 interface PresentationState {
-  waterSource: WaterSourceType;
+  waterSource: "Well Water" | "City Water";
   prospectInfo: ProspectInfo;
   waterTestResults: WaterTestResults;
-  financialInputs: FinancialInputs;
+  waterCostPreferences: {
+    buysBottled: boolean;
+  };
+  financialInputs: FinancialInputs; // Added to State
 }
 
-interface PresentationContextType {
-  state: PresentationState;
-  updateState: (section: keyof PresentationState, data: any) => void;
-  resetState: () => void;
-}
-
-// --- Initial Empty State ---
-
+// 2. Initial State
 const initialState: PresentationState = {
-  waterSource: null,
+  waterSource: "City Water",
   prospectInfo: {
-    partner1Name: "",
-    partner2Name: "",
+    title1: "",
+    firstName1: "",
+    lastName1: "",
+    title2: "",
+    firstName2: "",
+    lastName2: "",
     address: "",
     city: "",
     state: "",
     zip: "",
     phone: "",
     email: "",
-    date: new Date().toISOString().split('T')[0],
     householdSize: 1,
   },
   waterTestResults: {
@@ -73,71 +68,84 @@ const initialState: PresentationState = {
     hardness: "",
     ph: "",
     chlorine: "",
-    ironFerrous: "",
-    ironFerric: "",
-    hydrogenSulfide: "",
-    appearance: [],
-    pipeSize: "",
-    pipeType: "",
-    wellPumpDeliveryRate: "",
+  },
+  waterCostPreferences: {
+    buysBottled: false,
   },
   financialInputs: {
-    weeklyBottledWaterCost: 0,
-    monthlyFilterCost: 0,
     weeklyGroceryBill: 0,
+    productPercentage: 0.15, // Defaulting to 15% as per your slide logic
+    monthlyBottledWaterCost: 0,
   },
 };
 
-// --- Context ---
+// 3. Reducer Logic
+type Action =
+  | { type: "UPDATE_SOURCE"; payload: "Well Water" | "City Water" }
+  | { type: "UPDATE_PROSPECT"; payload: Partial<ProspectInfo> }
+  | { type: "UPDATE_COST_PREFS"; payload: Partial<{ buysBottled: boolean }> }
+  | { type: "UPDATE_TEST"; payload: Partial<WaterTestResults> }
+  | { type: "UPDATE_FINANCIAL"; payload: Partial<FinancialInputs> }; // Added Action
 
-const PresentationContext = createContext<PresentationContextType | undefined>(undefined);
-
-// --- Provider Component ---
-
-export const PresentationProvider = ({ children }: { children: ReactNode }) => {
-  const [state, setState] = useState<PresentationState>(initialState);
-
-  const updateState = <K extends keyof PresentationState>(
-    section: K,
-    data: any
-  ) => {
-    setState((prevState) => {
-      const currentSection = prevState[section];
-
-      if (typeof currentSection === 'object' && currentSection !== null && !Array.isArray(currentSection)) {
-        return {
-          ...prevState,
-          [section]: {
-            ...currentSection,
-            ...data,
-          },
-        };
-      }
-
-      return {
-        ...prevState,
-        [section]: data,
+function presentationReducer(state: PresentationState, action: Action): PresentationState {
+  switch (action.type) {
+    case "UPDATE_SOURCE":
+      return { ...state, waterSource: action.payload };
+    case "UPDATE_PROSPECT":
+      return { 
+        ...state, 
+        prospectInfo: { ...state.prospectInfo, ...action.payload } 
       };
-    });
-  };
+    case "UPDATE_TEST":
+      return { 
+        ...state, 
+        waterTestResults: { ...state.waterTestResults, ...action.payload } 
+      };
+    case "UPDATE_COST_PREFS":
+      return { 
+        ...state, 
+        waterCostPreferences: { ...state.waterCostPreferences, ...action.payload } 
+      };
+    case "UPDATE_FINANCIAL":
+      return {
+        ...state,
+        financialInputs: { ...state.financialInputs, ...action.payload }
+      };
+    default:
+      return state;
+  }
+}
 
-  const resetState = () => {
-    setState(initialState);
-  };
+// 4. Context & Provider Setup
+const PresentationContext = createContext<{
+  state: PresentationState;
+  updateState: (section: keyof PresentationState, data: any) => void;
+} | undefined>(undefined);
+
+export function PresentationProvider({ children }: { children: ReactNode }) {
+  const [state, dispatch] = useReducer(presentationReducer, initialState);
+
+  const updateState = useCallback((section: keyof PresentationState, data: any) => {
+    if (section === "waterSource") dispatch({ type: "UPDATE_SOURCE", payload: data });
+    if (section === "prospectInfo") dispatch({ type: "UPDATE_PROSPECT", payload: data });
+    if (section === "waterTestResults") dispatch({ type: "UPDATE_TEST", payload: data });
+    if (section === "waterCostPreferences") dispatch({ type: "UPDATE_COST_PREFS", payload: data });
+    if (section === "financialInputs") dispatch({ type: "UPDATE_FINANCIAL", payload: data }); // Added Dispatch
+  }, []);
+
+  const value = useMemo(() => ({ state, updateState }), [state, updateState]);
 
   return (
-    <PresentationContext.Provider value={{ state, updateState, resetState }}>
+    <PresentationContext.Provider value={value}>
       {children}
     </PresentationContext.Provider>
   );
-};
+}
 
-// --- Custom Hook ---
-
-export const usePresentation = () => {
+export function usePresentation() {
   const context = useContext(PresentationContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("usePresentation must be used within a PresentationProvider");
   }
   return context;
-};
+}

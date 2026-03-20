@@ -2,16 +2,19 @@
 
 import React, { useState } from "react";
 import { PresentationProvider, usePresentation } from "@/app/context/PresentationContext";
-// Import Clerk components if you are using Clerk for auth
 import { SignOutButton } from "@clerk/nextjs";
 
+// Import All Slide Components
 import Slide1_ProspectInfo from "@/app/components/presentation/Slide1_ProspectInfo";
-import Slide2_WaterCosts from "@/app/components/presentation/Slide2_WaterCosts";
+import Slide2_HelpRequest from "@/app/components/presentation/Slide2_HelpRequest";
+import Slide3_BottledWaterCheck from "@/app/components/presentation/Slide3_BottledWaterCheck";
+import Slide2_WaterCosts from "@/app/components/presentation/Slide2_WaterCosts"; // Note: Filename doesn't match Slide # yet
+import Slide_ThreeTypes from "@/app/components/presentation/Slide_ThreeTypes";
+import Slide_WaterTestResults from "@/app/components/presentation/Slide_WaterTestResults";
 import Slide3_GrocerySavings from "@/app/components/presentation/Slide3_GrocerySavings";
 import Slide4_DailySavings from "@/app/components/presentation/Slide4_DailySavings";
 import Slide5_Summary from "@/app/components/presentation/Slide5_Summary";
 
-// Create a wrapper component to ensure the Context is available
 export default function PresentationPage() {
   return (
     <PresentationProvider>
@@ -25,18 +28,9 @@ function PresentationViewer() {
   const { state } = usePresentation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const slides = [
-    <Slide1_ProspectInfo key="s1" />,
-    <Slide2_WaterCosts key="s2" />,
-    <Slide3_GrocerySavings key="s3" />,
-    <Slide4_DailySavings key="s4" />,
-    <Slide5_Summary key="s5" />
-  ];
-
-  const totalSlides = slides.length;
-
+  // Unified navigation function
   const handleNext = () => {
-    if (currentSlideIndex < totalSlides - 1) {
+    if (currentSlideIndex < slides.length - 1) {
       setCurrentSlideIndex((prev) => prev + 1);
     }
   };
@@ -46,6 +40,21 @@ function PresentationViewer() {
       setCurrentSlideIndex((prev) => prev - 1);
     }
   };
+
+  // ONE single source of truth for your slides
+  const slides = [
+    <Slide1_ProspectInfo key="s1" />,
+    <Slide2_HelpRequest key="s2" />,
+    <Slide3_BottledWaterCheck key="s3" onNext={handleNext} />,
+    <Slide2_WaterCosts key="s4" />,
+    <Slide_ThreeTypes key="s5" />,
+    <Slide_WaterTestResults key="s6" />,
+    <Slide3_GrocerySavings key="s7" />,
+    <Slide4_DailySavings key="s8" />,
+    <Slide5_Summary key="s9" />
+  ];
+
+  const totalSlides = slides.length;
 
   const handleSubmitToCRM = async () => {
     setIsSubmitting(true);
@@ -73,11 +82,9 @@ function PresentationViewer() {
 
   return (
     <div className="flex flex-col h-screen w-full bg-white text-gray-900 overflow-hidden font-sans">
-      
-      {/* Top Header */}
       <header className="bg-blue-600 text-white p-4 shadow-md z-10">
         <div className="flex justify-between items-center max-w-6xl mx-auto w-full">
-          <div className="w-24"></div> {/* Spacer for centering */}
+          <div className="w-24"></div>
           <h1 className="text-xl font-bold tracking-wide">Peace of Mind in Every Drop</h1>
           <div className="w-24 text-right">
             <SignOutButton>
@@ -87,14 +94,12 @@ function PresentationViewer() {
         </div>
       </header>
 
-      {/* Main Slide Content Area */}
       <main className="flex-grow overflow-y-auto p-6 md:p-12 flex justify-center items-center bg-gray-50">
         <div className="w-full max-w-5xl h-full bg-white shadow-xl rounded-2xl border border-gray-100 p-8">
           {slides[currentSlideIndex]}
         </div>
       </main>
 
-{/* Bottom Navigation Controls */}
       <footer className="bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
         <div className="flex justify-between items-center max-w-6xl mx-auto w-full">
           <button
@@ -108,8 +113,6 @@ function PresentationViewer() {
           >
             ← Previous
           </button>
-
-          {/* Progress indicator removed from here */}
 
           {currentSlideIndex === totalSlides - 1 ? (
             <button
