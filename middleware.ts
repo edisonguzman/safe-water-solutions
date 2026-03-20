@@ -19,21 +19,23 @@ export default clerkMiddleware(async (auth, req) => {
     return (await auth()).redirectToSignIn();
   }
 
-  // If logged in, grab the metadata
-  const metadata = sessionClaims?.metadata as { role?: string; approved?: boolean };
+  // If logged in, grab the metadata from session claims
+  // Ensure your Clerk Dashboard is configured to include 'metadata' in the JWT session tokens
+  const metadata = sessionClaims?.metadata as { role?: string; approved?: boolean } | undefined;
 
   // 3. Admin Protection: Redirect non-admins away from /admin
   if (isAdminRoute(req) && metadata?.role !== 'admin') {
-    return NextResponse.redirect(new URL('/presentation', req.url));
+    return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
   // 4. Approval Protection: Redirect unapproved users to the pending page
-  // We skip this check if they are already on the pending page or signing out
+  // We skip this check if they are already on the pending page
+  // Admins bypass this check entirely
   if (
     userId && 
     !isPublicRoute(req) && 
-    !metadata?.approved && 
-    metadata?.role !== 'admin' // Admins don't need 'approved' flag usually
+    metadata?.role !== 'admin' && 
+    !metadata?.approved
   ) {
     return NextResponse.redirect(new URL('/pending-approval', req.url));
   }
