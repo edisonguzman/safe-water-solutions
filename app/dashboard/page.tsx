@@ -1,24 +1,29 @@
 import React from "react";
 import { sql } from "@/app/lib/db";
 import SendEmailButton from "@/app/components/SendEmailButton";
+import { auth } from "@clerk/nextjs/server";
+import Link from "next/link"; // Added Link import
 
 export default async function SalesDashboard() {
-  // TODO: Once Clerk auth is integrated, we will dynamically pull the logged-in user's ID here.
-  // For now, we use the same test ID we used in our API route to fetch your test submissions.
-  const salesRepId = 'test_rep_123';
-
-  // Securely fetch prospects directly from Neon, ordered by newest first
+  // Pull the real Clerk User ID
+  const { userId } = await auth();
+  
+  // Fetch prospects using the new naming convention (first_name1, last_name1, etc.)
   const prospects = await sql`
     SELECT 
       id, 
-      partner1_name, 
-      partner2_name, 
+      first_name1, 
+      last_name1, 
+      first_name2,
+      last_name2,
       email, 
       address,
-      presentation_date, 
+      city,
+      state,
+      created_at, 
       water_source
     FROM prospects
-    WHERE sales_rep_id = ${salesRepId}
+    WHERE sales_rep_id = ${userId}
     ORDER BY created_at DESC
   `;
 
@@ -32,7 +37,6 @@ export default async function SalesDashboard() {
           <div className="flex items-center gap-4">
             <span className="text-sm font-medium text-gray-500">Sales Dashboard</span>
             <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold border border-blue-200">
-              {/* Placeholder for Rep Initials */}
               SR
             </div>
           </div>
@@ -78,16 +82,20 @@ export default async function SalesDashboard() {
                   {prospects.map((prospect) => (
                     <tr key={prospect.id} className="hover:bg-blue-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
-                        {new Date(prospect.presentation_date).toLocaleDateString()}
+                        {new Date(prospect.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-bold text-gray-900">
-                          {prospect.partner1_name} {prospect.partner2_name && `& ${prospect.partner2_name}`}
-                        </div>
-                        <div className="text-sm text-gray-500">{prospect.email || 'No email provided'}</div>
+                        {/* Step 3: Link to Detail Page */}
+                        <Link href={`/dashboard/prospect/${prospect.id}`} className="group block">
+                          <div className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                            {prospect.first_name1} {prospect.last_name1}
+                            {prospect.first_name2 && ` & ${prospect.first_name2} ${prospect.last_name2}`}
+                          </div>
+                          <div className="text-sm text-gray-500">{prospect.email || 'No email provided'}</div>
+                        </Link>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {prospect.address || '—'}
+                        {prospect.city}, {prospect.state}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -99,7 +107,7 @@ export default async function SalesDashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-<SendEmailButton prospect={prospect} />
+                        <SendEmailButton prospect={prospect} />
                       </td>
                     </tr>
                   ))}
@@ -111,4 +119,4 @@ export default async function SalesDashboard() {
       </main>
     </div>
   );
-} 
+}
