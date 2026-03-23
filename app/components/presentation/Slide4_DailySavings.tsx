@@ -25,40 +25,50 @@ export default function Slide4_DailySavings() {
       {/* Left Column: Visuals & Savings Percentages */}
       <div className="w-full md:w-1/2 flex flex-col gap-6">
         <h2 className="text-3xl font-bold text-blue-900 leading-tight">
-          The value of treated water travels <br/>
-          <span className="text-blue-600">throughout your entire home.</span>
+          The value of treated water travels  
+          <span className="text-blue-600"> throughout your entire home.</span>
         </h2>
         
         {/* Savings Breakdown Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
           <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center text-center">
-            <div className="bg-gray-200 w-full h-24 rounded flex items-center justify-center text-gray-500 text-xs mb-3">
-              [Image: Water Heater]
-            </div>
+            
+              <img 
+  src="/images/presentation/water-heater.jpg" 
+  alt="Water heater" 
+  className="w-full h-full object-cover rounded-xl"
+/>
+            
             <span className="font-semibold text-gray-800 text-sm">Energy savings on water heaters:</span>
             <span className="text-blue-600 font-bold mt-1">Electric: 21% | Gas: 29%</span>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center text-center">
-            <div className="bg-gray-200 w-full h-24 rounded flex items-center justify-center text-gray-500 text-xs mb-3">
-              [Image: Clothing/Linens]
-            </div>
+            <img 
+  src="/images/presentation/clothing-linen.jpg" 
+  alt="Clthing Linen" 
+  className="w-full h-full object-cover rounded-xl"
+/>
             <span className="font-semibold text-gray-800 text-sm">Savings on all linens & clothing:</span>
             <span className="text-blue-600 font-bold mt-1">15 - 30%</span>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center text-center">
-            <div className="bg-gray-200 w-full h-24 rounded flex items-center justify-center text-gray-500 text-xs mb-3">
-              [Image: Plumbing/Faucet]
-            </div>
+           <img 
+  src="/images/presentation/plumbing.jpg" 
+  alt="Plumbing" 
+  className="w-full h-full object-cover rounded-xl"
+/>
             <span className="font-semibold text-gray-800 text-sm">Replacement plumbing & fixtures:</span>
             <span className="text-blue-600 font-bold mt-1">25 - 75%</span>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center text-center">
-             <div className="bg-gray-200 w-full h-24 rounded flex items-center justify-center text-gray-500 text-xs mb-3">
-              [Image: Shaving/Razors]
-            </div>
+             <img 
+  src="/images/presentation/shaving.jpg" 
+  alt="Shaving" 
+  className="w-full h-full object-cover rounded-xl"
+/>
             <span className="font-semibold text-gray-800 text-sm">Extended razor blade life:</span>
             <span className="text-blue-600 font-bold mt-1">50 - 66%</span>
           </div>

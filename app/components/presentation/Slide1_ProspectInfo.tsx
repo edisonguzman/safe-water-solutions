@@ -17,7 +17,11 @@ export default function Slide1_ProspectInfo() {
       <div className="w-full md:w-1/3 flex flex-col gap-6">
         <div className="bg-gray-200 h-64 rounded-lg flex items-center justify-center text-gray-500 shadow-inner overflow-hidden">
           {/* Placeholder for branding or family image */}
-          <div className="text-center p-4 italic">"Quality water for your family's future."</div>
+          <img 
+  src="/images/presentation/Slide-1.jpg" 
+  alt="Smooth skin" 
+  className="w-full h-full object-cover rounded-xl"
+/>
         </div>
         
         <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 shadow-sm">
@@ -54,7 +58,7 @@ export default function Slide1_ProspectInfo() {
       <div className="w-full md:w-2/3 flex flex-col gap-6">
         
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <h2 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6">Prospect Details</h2>
+          <h2 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6">Your Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             {/* Person 1 */}

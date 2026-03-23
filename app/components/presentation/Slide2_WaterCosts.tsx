@@ -24,7 +24,7 @@ export default function Slide2_WaterCosts() {
       {/* Left Column: Visuals & Educational Text */}
       <div className="w-full md:w-1/2 flex flex-col gap-6">
         <h2 className="text-3xl font-bold text-blue-900 leading-tight">
-          The right water will improve your <br/>
+          The right water will improve your: <br/>
           <span className="text-blue-600">Health, Home, Happiness, and Savings!</span>
         </h2>
         
@@ -33,18 +33,26 @@ export default function Slide2_WaterCosts() {
         </p>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gray-200 h-32 rounded-lg flex items-center justify-center text-gray-500 text-sm text-center p-2 shadow-inner">
-            [Image: Boiling Pasta]
-          </div>
-          <div className="bg-gray-200 h-32 rounded-lg flex items-center justify-center text-gray-500 text-sm text-center p-2 shadow-inner">
-            [Image: Fridge Filter Change]
-          </div>
-          <div className="bg-gray-200 h-32 rounded-lg flex items-center justify-center text-gray-500 text-sm text-center p-2 shadow-inner">
-            [Image: Clear vs Cloudy Tea]
-          </div>
-          <div className="bg-gray-200 h-32 rounded-lg flex items-center justify-center text-gray-500 text-sm text-center p-2 shadow-inner">
-            [Image: Water Pitcher]
-          </div>
+          <img 
+  src="/images/presentation/Boiling-Pasta.jpg" 
+  alt="Boiling Pasta" 
+  className="w-full h-full object-cover rounded-xl"
+/>
+          <img 
+  src="/images/presentation/Fridge-filter.jpg" 
+  alt="Fridge Filter" 
+  className="w-full h-full object-cover rounded-xl"
+/>
+          <img 
+  src="/images/presentation/tea.jpg" 
+  alt="Clear vs cloudy tea" 
+  className="w-full h-full object-cover rounded-xl"
+/>
+          <img 
+  src="/images/presentation/Water-Pitcher.jpg" 
+  alt="Smooth skin" 
+  className="w-full h-full object-cover rounded-xl"
+/>
         </div>
       </div>
 

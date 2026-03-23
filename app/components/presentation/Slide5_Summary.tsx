@@ -68,8 +68,7 @@ export default function Slide5_Summary() {
             </div>
           </div>
 
-          <hr className="border-t-2 border-gray-100 my-2" />
-
+         
           <div className="flex flex-col items-center bg-green-50 p-6 rounded-xl border border-green-200 mt-auto">
             <span className="text-green-800 font-bold mb-1 uppercase tracking-wide">10-Year Net Savings!</span>
             <span className={`text-5xl font-black ${tenYearNet >= 0 ? 'text-green-600' : 'text-red-500'}`}>
@@ -81,7 +80,7 @@ export default function Slide5_Summary() {
         {/* Right Column: Easy-Pay Monthly */}
         <div className="w-full md:w-1/2 flex flex-col gap-6 bg-white p-6 rounded-2xl border border-gray-200 shadow-lg relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 bg-green-500"></div>
-          <h3 className="text-2xl font-bold text-center text-green-900 mb-2">Easy-Pay Program with $0 Down</h3>
+          <h3 className="text-2xl font-bold text-center text-green-900 mb-2">Easy-Pay Program</h3>
           
           <div className="bg-green-50 p-4 rounded-xl border border-green-100 flex flex-col justify-center py-8">
             <h4 className="font-semibold text-green-800 text-center mb-4">Money Saved By Better Water</h4>
@@ -106,7 +105,6 @@ export default function Slide5_Summary() {
             </div>
           </div>
 
-          <hr className="border-t-2 border-gray-100 my-2" />
 
           <div className="flex flex-col items-center bg-blue-50 p-6 rounded-xl border border-blue-200 mt-auto">
             <span className="text-blue-800 font-bold mb-1 uppercase tracking-wide">Total Savings Per Month!</span>

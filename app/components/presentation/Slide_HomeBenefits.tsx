@@ -18,9 +18,11 @@ export default function Slide_HomeBenefits({ onNext }: HomeBenefitsProps) {
         
         {/* Benefit 1 */}
         <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 flex flex-col items-center text-center group hover:shadow-md transition-shadow">
-          <div className="w-full aspect-video bg-blue-50 rounded-xl mb-4 flex items-center justify-center text-blue-300 border-2 border-dashed border-blue-100 group-hover:border-blue-200">
-            [Image: Smoother Skin/Shower]
-          </div>
+          <img 
+  src="/images/presentation/smoother-skin.jpg" 
+  alt="Smooth skin" 
+  className="w-full h-full object-cover rounded-xl"
+/>
           <p className="text-gray-700 font-medium leading-relaxed">
             Skin feels smoother after hand washing, shave and shower with safe water.
           </p>
@@ -28,9 +30,11 @@ export default function Slide_HomeBenefits({ onNext }: HomeBenefitsProps) {
 
         {/* Benefit 2 */}
         <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 flex flex-col items-center text-center group hover:shadow-md transition-shadow">
-          <div className="w-full aspect-video bg-blue-50 rounded-xl mb-4 flex items-center justify-center text-blue-300 border-2 border-dashed border-blue-100 group-hover:border-blue-200">
-            [Image: Bright Laundry]
-          </div>
+          <img 
+  src="/images/presentation/bright-laundry.jpg" 
+  alt="Smooth skin" 
+  className="w-full h-full object-cover rounded-xl"
+/>
           <p className="text-gray-700 font-medium leading-relaxed">
             Brighter clothes that dry faster, saves energy and saves on expensive laundry detergent.
           </p>
@@ -38,9 +42,11 @@ export default function Slide_HomeBenefits({ onNext }: HomeBenefitsProps) {
 
         {/* Benefit 3 */}
         <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 flex flex-col items-center text-center group hover:shadow-md transition-shadow">
-          <div className="w-full aspect-video bg-blue-50 rounded-xl mb-4 flex items-center justify-center text-blue-300 border-2 border-dashed border-blue-100 group-hover:border-blue-200">
-            [Image: Spotless Dishes]
-          </div>
+          <img 
+  src="/images/presentation/spotless-dishes.jpg" 
+  alt="Spotless Dishes" 
+  className="w-full h-full object-cover rounded-xl"
+/>
           <p className="text-gray-700 font-medium leading-relaxed">
             Reduced streaks and spots on dishes and glasses while saving time and effort.
           </p>
@@ -48,9 +54,11 @@ export default function Slide_HomeBenefits({ onNext }: HomeBenefitsProps) {
 
         {/* Benefit 4 */}
         <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 flex flex-col items-center text-center group hover:shadow-md transition-shadow">
-          <div className="w-full aspect-video bg-blue-50 rounded-xl mb-4 flex items-center justify-center text-blue-300 border-2 border-dashed border-blue-100 group-hover:border-blue-200">
-            [Image: Food/Coffee]
-          </div>
+          <img 
+  src="/images/presentation/coffee.jpg" 
+  alt="Coffee" 
+  className="w-full h-full object-cover rounded-xl"
+/>
           <p className="text-gray-700 font-medium leading-relaxed">
             Improved taste with food cooked, rinsed or beverages made with safe water.
           </p>
@@ -58,9 +66,11 @@ export default function Slide_HomeBenefits({ onNext }: HomeBenefitsProps) {
 
         {/* Benefit 5 */}
         <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 flex flex-col items-center text-center group hover:shadow-md transition-shadow">
-          <div className="w-full aspect-video bg-blue-50 rounded-xl mb-4 flex items-center justify-center text-blue-300 border-2 border-dashed border-blue-100 group-hover:border-blue-200">
-            [Image: Plumbing/Appliances]
-          </div>
+          <img 
+  src="/images/presentation/plumbing-appliances.jpg" 
+  alt="Plumbing" 
+  className="w-full h-full object-cover rounded-xl"
+/>
           <p className="text-gray-700 font-medium leading-relaxed">
             Significant savings on plumbing, appliance repair and energy for heating water.
           </p>
@@ -68,9 +78,11 @@ export default function Slide_HomeBenefits({ onNext }: HomeBenefitsProps) {
 
         {/* Benefit 6 */}
         <div className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 flex flex-col items-center text-center group hover:shadow-md transition-shadow">
-          <div className="w-full aspect-video bg-blue-50 rounded-xl mb-4 flex items-center justify-center text-blue-300 border-2 border-dashed border-blue-100 group-hover:border-blue-200">
-            [Image: Soap Savings]
-          </div>
+          <img 
+  src="/images/presentation/cleaners.jpg" 
+  alt="Cleaners" 
+  className="w-full h-full object-cover rounded-xl"
+/>
           <p className="text-gray-700 font-medium leading-relaxed">
             Savings on significant amount of money on soap and cleaning products every month.
           </p>

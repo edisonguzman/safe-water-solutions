@@ -20,7 +20,11 @@ export default function Slide_ThreeTypes() {
         {/* Type 1: Tap */}
         <div className="flex flex-col items-center group">
           <div className="w-full aspect-video bg-gray-100 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center mb-6 shadow-sm group-hover:border-blue-300 transition-colors">
-            <span className="text-gray-400 font-medium">[Image: Kitchen Tap]</span>
+            <img 
+  src="/images/presentation/Kitchen-Tap.jpg" 
+  alt="Kitchen Tap" 
+  className="w-full h-full object-cover rounded-xl"
+/>
           </div>
           <div className="bg-gray-800 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-widest mb-3">
             Level 1
@@ -32,7 +36,11 @@ export default function Slide_ThreeTypes() {
         {/* Type 2: Working Grade */}
         <div className="flex flex-col items-center group">
           <div className="w-full aspect-video bg-blue-50 rounded-2xl border-2 border-dashed border-blue-200 flex items-center justify-center mb-6 shadow-sm group-hover:border-blue-400 transition-colors">
-            <span className="text-blue-300 font-medium">[Image: Shower/Appliances]</span>
+            <img 
+  src="/images/presentation/Shower-Appliances.jpg" 
+  alt="Shower & Appliances" 
+  className="w-full h-full object-cover rounded-xl"
+/>
           </div>
           <div className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-widest mb-3">
             Level 2
@@ -44,7 +52,11 @@ export default function Slide_ThreeTypes() {
         {/* Type 3: Food Grade */}
         <div className="flex flex-col items-center group">
           <div className="w-full aspect-video bg-green-50 rounded-2xl border-2 border-dashed border-green-200 flex items-center justify-center mb-6 shadow-sm group-hover:border-green-400 transition-colors">
-            <span className="text-green-300 font-medium">[Image: Purified Drinking Water]</span>
+           <img 
+  src="/images/presentation/purified-water.jpg" 
+  alt="Purified Water" 
+  className="w-full h-full object-cover rounded-xl"
+/>
           </div>
           <div className="bg-green-600 text-white px-6 py-2 rounded-full text-sm font-bold uppercase tracking-widest mb-3">
             Level 3

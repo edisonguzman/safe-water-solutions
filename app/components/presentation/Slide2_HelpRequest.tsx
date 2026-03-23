@@ -20,7 +20,11 @@ export default function Slide2_HelpRequest() {
         {/* Item 1 */}
         <div className="flex flex-col items-center">
           <div className="w-full aspect-square bg-gray-100 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center mb-4 shadow-sm">
-            <span className="text-gray-400 font-medium">[Image: Glass Bowl]</span>
+            <img 
+  src="/images/presentation/bowl.jpg" 
+  alt="Glass Bowl" 
+  className="w-full h-full object-cover rounded-xl"
+/>
           </div>
           <h3 className="text-2xl font-bold text-gray-800 uppercase tracking-wide">Glass Bowl</h3>
         </div>
@@ -28,7 +32,11 @@ export default function Slide2_HelpRequest() {
         {/* Item 2 */}
         <div className="flex flex-col items-center">
           <div className="w-full aspect-square bg-gray-100 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center mb-4 shadow-sm">
-            <span className="text-gray-400 font-medium">[Image: Water Glass]</span>
+            <img 
+  src="/images/presentation/Glass.jpg" 
+  alt="Water Glass" 
+  className="w-full h-full object-cover rounded-xl"
+/>
           </div>
           <h3 className="text-2xl font-bold text-gray-800 uppercase tracking-wide">Water Glass</h3>
         </div>
@@ -36,7 +44,11 @@ export default function Slide2_HelpRequest() {
         {/* Item 3 */}
         <div className="flex flex-col items-center">
           <div className="w-full aspect-square bg-gray-100 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center mb-4 shadow-sm">
-            <span className="text-gray-400 font-medium">[Image: Towels]</span>
+            <img 
+  src="/images/presentation/washcloth-towel2.jpg" 
+  alt="Smooth skin" 
+  className="w-full h-full object-cover rounded-xl"
+/>
           </div>
           <h3 className="text-2xl font-bold text-gray-800 uppercase tracking-wide leading-tight">
             Washcloth & <br/> Bath Towel

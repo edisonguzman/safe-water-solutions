@@ -25,9 +25,13 @@ export default function Slide3_BottledWaterCheck({ onNext }: BottledWaterProps) 
 
       {/* Image Placeholder */}
       <div className="w-full max-w-lg aspect-video bg-gray-100 rounded-3xl border-2 border-dashed border-gray-300 flex items-center justify-center shadow-inner">
-        <span className="text-gray-400 font-medium text-lg text-center p-6">
-          [Image: Cases of bottled water or a water cooler]
-        </span>
+        
+          <img 
+  src="/images/presentation/Bottled-Water.jpg" 
+  alt="Bottled Water" 
+  className="w-full h-full object-cover rounded-xl"
+/>
+       
       </div>
 
       {/* Action Buttons */}
