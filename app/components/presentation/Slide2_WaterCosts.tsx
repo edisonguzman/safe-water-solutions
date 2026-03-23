@@ -44,7 +44,7 @@ export default function Slide2_WaterCosts() {
   className="w-full h-full object-cover rounded-xl"
 />
           <img 
-  src="/images/presentation/tea.jpg" 
+  src="/images/presentation/Tea.jpg" 
   alt="Clear vs cloudy tea" 
   className="w-full h-full object-cover rounded-xl"
 />
