@@ -23,6 +23,11 @@ export default function Slide_Summary() {
   const totalYearlySavings = totalMonthlySavings * 12;
   const tenYearSavings = totalYearlySavings * 10;
 
+  // Helper to format names
+  const displayName = state.prospectInfo.firstName2 
+    ? `${state.prospectInfo.firstName1} & ${state.prospectInfo.firstName2}`
+    : state.prospectInfo.firstName1;
+
   return (
     <div className="h-full flex flex-col gap-6 overflow-y-auto">
       <div className="text-center space-y-2">
@@ -30,7 +35,7 @@ export default function Slide_Summary() {
           Your Peace of Mind Summary
         </h2>
         <p className="text-gray-500 font-medium italic">
-          Prepared for {state.prospectInfo.firstName1} {state.prospectInfo.lastName1}
+          Prepared for {displayName}
         </p>
       </div>
 
