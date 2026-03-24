@@ -30,3 +30,29 @@ export async function GET(
     return NextResponse.json({ error: 'Failed to fetch prospect' }, { status: 500 });
   }
 }
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId } = await auth();
+    // Security check: Ensure the user is logged in
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
+
+    // Delete the prospect only if it belongs to the current Sales Rep
+    await sql`
+      DELETE FROM prospects 
+      WHERE id = ${id} AND sales_rep_id = ${userId}
+    `;
+
+    return NextResponse.json({ message: "Prospect deleted successfully" });
+  } catch (error) {
+    console.error('Delete API Error:', error);
+    return NextResponse.json({ error: 'Failed to delete prospect' }, { status: 500 });
+  }
+}
