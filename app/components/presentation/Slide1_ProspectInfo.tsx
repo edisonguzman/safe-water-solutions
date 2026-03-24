@@ -7,7 +7,14 @@ export default function Slide1_ProspectInfo() {
   const { state, updateState } = usePresentation();
 
   const handleInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateState("prospectInfo", { [e.target.name]: e.target.value });
+    // For numbers, we allow the string to pass through so the user can delete characters
+    const value = e.target.type === "number" ? e.target.value : e.target.value;
+    updateState("prospectInfo", { [e.target.name]: value });
+  };
+
+  // UX Improvement: Select all text on focus so iPad users can easily overwrite
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
   };
 
   return (
@@ -16,12 +23,11 @@ export default function Slide1_ProspectInfo() {
       {/* Left Column: Visuals & Water Source */}
       <div className="w-full md:w-1/3 flex flex-col gap-6">
         <div className="bg-gray-200 h-64 rounded-lg flex items-center justify-center text-gray-500 shadow-inner overflow-hidden">
-          {/* Placeholder for branding or family image */}
           <img 
-  src="/images/presentation/Slide-1.jpg" 
-  alt="Smooth skin" 
-  className="w-full h-full object-cover rounded-xl"
-/>
+            src="/images/presentation/Slide-1.jpg" 
+            alt="Smooth skin" 
+            className="w-full h-full object-cover rounded-xl"
+          />
         </div>
         
         <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 shadow-sm">
@@ -56,7 +62,6 @@ export default function Slide1_ProspectInfo() {
 
       {/* Right Column: Detailed Data Entry */}
       <div className="w-full md:w-2/3 flex flex-col gap-6">
-        
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <h2 className="text-xl font-bold text-gray-800 border-b pb-2 mb-6">Your Information</h2>
           
@@ -118,7 +123,16 @@ export default function Slide1_ProspectInfo() {
             </div>
             <div className="md:col-span-6 mt-2">
               <label className="block text-sm font-bold text-blue-900">Total People in Household</label>
-              <input type="number" name="householdSize" min="1" value={state.prospectInfo.householdSize || 1} onChange={handleInfoChange} className="w-full p-3 border rounded-lg border-blue-200 bg-blue-50 text-xl font-bold outline-none focus:ring-2 focus:ring-blue-500 text-center" />
+              <input 
+                type="number" 
+                name="householdSize" 
+                inputMode="numeric"
+                min="1" 
+                value={state.prospectInfo.householdSize ?? ""} 
+                onChange={handleInfoChange} 
+                onFocus={handleFocus}
+                className="w-full p-3 border rounded-lg border-blue-200 bg-blue-50 text-xl font-bold outline-none focus:ring-2 focus:ring-blue-500 text-center" 
+              />
             </div>
           </div>
         </div>
