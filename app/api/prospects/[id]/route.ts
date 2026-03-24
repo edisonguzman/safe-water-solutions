@@ -2,57 +2,82 @@ import { NextResponse } from 'next/server';
 import { sql } from '@/app/lib/db';
 import { auth } from "@clerk/nextjs/server";
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> } // Change 1: Define as a Promise
-) {
+export async function GET() {
   try {
-    const { userId } = await auth();
+    const { userId, sessionClaims } = await auth();
     if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-    // Change 2: Await the params before using them
-    const resolvedParams = await params;
-    const { id } = resolvedParams;
+    const isAdmin = (sessionClaims?.metadata as any)?.role === 'admin';
 
-    const prospect = await sql`
+    // Logic: Admins see all. Reps see only their own.
+    const prospects = await sql`
       SELECT * FROM prospects 
-      WHERE id = ${id} AND sales_rep_id = ${userId}
-      LIMIT 1
+      ${isAdmin ? sql`` : sql`WHERE sales_rep_id = ${userId}`}
+      ORDER BY created_at DESC
     `;
 
-    if (prospect.length === 0) {
-      return new NextResponse("Not Found", { status: 404 });
-    }
-
-    return NextResponse.json(prospect[0]);
+    return NextResponse.json(prospects);
   } catch (error) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: 'Failed to fetch prospect' }, { status: 500 });
+    console.error('Fetch Prospects Error:', error);
+    return NextResponse.json({ error: 'Failed to fetch prospects' }, { status: 500 });
   }
 }
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+
+export async function POST(request: Request) {
   try {
     const { userId } = await auth();
-    // Security check: Ensure the user is logged in
-    if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
+    const body = await request.json();
+    const { waterSource, prospectInfo, waterTestResults, financialInputs } = body;
+    const salesRepId = userId || 'unauthenticated_rep'; 
 
-    const resolvedParams = await params;
-    const { id } = resolvedParams;
-
-    // Delete the prospect only if it belongs to the current Sales Rep
-    await sql`
-      DELETE FROM prospects 
-      WHERE id = ${id} AND sales_rep_id = ${userId}
+    const result = await sql`
+      INSERT INTO prospects (
+        sales_rep_id,
+        title1, first_name1, last_name1,
+        title2, first_name2, last_name2,
+        address, city, state, zip, phone, email,
+        household_size, water_source,
+        tds, hardness, ph, chlorine, iron, nitrates,
+        weekly_grocery_bill, product_percentage
+      ) VALUES (
+        ${salesRepId},
+        ${prospectInfo.title1 || ''}, 
+        ${prospectInfo.firstName1 || ''}, 
+        ${prospectInfo.lastName1 || ''},
+        ${prospectInfo.title2 || ''}, 
+        ${prospectInfo.firstName2 || ''}, 
+        ${prospectInfo.lastName2 || ''},
+        ${prospectInfo.address || ''},
+        ${prospectInfo.city || ''},
+        ${prospectInfo.state || ''},
+        ${prospectInfo.zip || ''},
+        ${prospectInfo.phone || ''},
+        ${prospectInfo.email || ''},
+        ${prospectInfo.householdSize || 1}, 
+        ${waterSource || null},
+        ${waterTestResults.tds || ''}, 
+        ${waterTestResults.hardness || ''}, 
+        ${waterTestResults.ph || ''}, 
+        ${waterTestResults.chlorine || ''},
+        ${waterTestResults.iron || ''},
+        ${waterTestResults.nitrates || ''},
+        ${financialInputs.weeklyGroceryBill || 0},
+        ${financialInputs.productPercentage || 0.15}
+      )
+      RETURNING id;
     `;
 
-    return NextResponse.json({ message: "Prospect deleted successfully" });
+    return NextResponse.json({ 
+      success: true, 
+      message: "Prospect successfully saved to Custom CRM",
+      prospectId: result[0].id 
+    }, { status: 200 });
+
   } catch (error) {
-    console.error('Delete API Error:', error);
-    return NextResponse.json({ error: 'Failed to delete prospect' }, { status: 500 });
+    console.error('Failed to save prospect:', error);
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Failed to save prospect to CRM' 
+    }, { status: 500 });
   }
 }

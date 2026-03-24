@@ -1,6 +1,6 @@
 import React from "react";
 import { sql } from "@/app/lib/db";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import Link from "next/link";
 import DashboardActions from "@/app/components/DashboardActions";
 
@@ -9,22 +9,24 @@ export default async function SalesDashboard({
 }: { 
   searchParams: Promise<{ start?: string; end?: string; q?: string }> 
 }) {
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
+  const client = await clerkClient();
   const filters = await searchParams;
+  
+  const isAdmin = (sessionClaims?.metadata as any)?.role === 'admin';
   
   // Date and Search Filtering Logic
   const startDate = filters.start ? `${filters.start} 00:00:00` : '1970-01-01';
   const endDate = filters.end ? `${filters.end} 23:59:59` : '2099-12-31';
   const searchTerm = filters.q ? `%${filters.q}%` : '%';
 
+  // 1. Fetch Prospects
   const prospects = await sql`
     SELECT 
       id, first_name1, last_name1, first_name2, last_name2,
-      email, address, city, state, created_at, water_source
+      email, address, city, state, created_at, water_source, sales_rep_id
     FROM prospects
-    WHERE sales_rep_id = ${userId}
-    AND created_at >= ${startDate}
-    AND created_at <= ${endDate}
+    WHERE (created_at >= ${startDate} AND created_at <= ${endDate})
     AND (
       first_name1 ILIKE ${searchTerm} OR 
       last_name1 ILIKE ${searchTerm} OR 
@@ -32,8 +34,18 @@ export default async function SalesDashboard({
       last_name2 ILIKE ${searchTerm} OR 
       email ILIKE ${searchTerm}
     )
+    ${isAdmin ? sql`` : sql`AND sales_rep_id = ${userId}`}
     ORDER BY created_at DESC
   `;
+
+  // 2. If Admin, fetch Clerk users to map IDs to Names
+  let repMap: Record<string, string> = {};
+  if (isAdmin) {
+    const clerkUsers = await client.users.getUserList();
+    clerkUsers.data.forEach(u => {
+      repMap[u.id] = `${u.firstName} ${u.lastName}`;
+    });
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
@@ -41,8 +53,12 @@ export default async function SalesDashboard({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-900">Safe Water CMS</h1>
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-500">Sales Dashboard</span>
-            <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold border border-blue-200">SR</div>
+            <span className="text-sm font-medium text-gray-500">
+              {isAdmin ? "Executive Dashboard" : "Sales Dashboard"}
+            </span>
+            <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold border border-blue-200">
+              {isAdmin ? "EA" : "SR"}
+            </div>
           </div>
         </div>
       </header>
@@ -50,9 +66,10 @@ export default async function SalesDashboard({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
           <div className="w-full md:w-auto">
-            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">My Prospects</h2>
+            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+              {isAdmin ? "Company Wide Prospects" : "My Prospects"}
+            </h2>
             
-            {/* Search and Filter Form */}
             <form className="mt-4 flex flex-wrap gap-2 items-center">
               <input 
                 type="text" 
@@ -99,6 +116,7 @@ export default async function SalesDashboard({
                   <tr>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Date</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Prospect Name(s)</th>
+                    {isAdmin && <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Sales Rep</th>}
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Location</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Water Source</th>
                     <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase">Actions</th>
@@ -114,11 +132,18 @@ export default async function SalesDashboard({
                         <Link href={`/dashboard/prospect/${prospect.id}`} className="group block">
                           <div className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                             {prospect.first_name1} {prospect.last_name1}
-                            {prospect.first_name2 && ` & ${prospect.first_name2} ${prospect.last_name2}`}
+                            {prospect.first_name2 && ` & ${prospect.first_name2}`}
                           </div>
                           <div className="text-sm text-gray-500">{prospect.email || 'No email provided'}</div>
                         </Link>
                       </td>
+                      {isAdmin && (
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-md">
+                            {repMap[prospect.sales_rep_id] || "Unknown Rep"}
+                          </span>
+                        </td>
+                      )}
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{prospect.city}, {prospect.state}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${prospect.water_source === 'Well Water' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
