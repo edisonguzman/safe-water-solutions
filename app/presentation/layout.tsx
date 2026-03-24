@@ -8,15 +8,13 @@ export default function PresentationLayout({
   children: React.ReactNode;
 }) {
   return (
-    <section className="min-h-[100dvh] bg-gray-50 flex flex-col overflow-x-hidden">
-      {/* Now the app knows what this is */}
-      <PresentationNav /> 
-      
-      <PresentationProvider>
-        <main className="flex-1 w-full relative">
-           {children}
-        </main>
-      </PresentationProvider>
-    </section>
+<section className="min-h-screen bg-gray-50 flex flex-col">
+  <PresentationNav /> 
+  <PresentationProvider>
+    <main className="w-full">
+       {children}
+    </main>
+  </PresentationProvider>
+</section>
   );
 }
