@@ -1,6 +1,6 @@
 import React from "react";
-import { PresentationProvider } from "@/app/context/PresentationContext";
 import PresentationNav from "@/app/components/presentation/PresentationNav";
+import { PresentationProvider } from "@/app/context/PresentationContext";
 
 export default function PresentationLayout({
   children,
@@ -8,14 +8,14 @@ export default function PresentationLayout({
   children: React.ReactNode;
 }) {
   return (
-    <section className="min-h-screen bg-gray-50 flex flex-col">
-      {/* This is the lightweight replacement for your main headers */}
+    <section className="min-h-[100dvh] bg-gray-50 flex flex-col overflow-x-hidden">
+      {/* Now the app knows what this is */}
       <PresentationNav /> 
       
       <PresentationProvider>
-        <div className="flex-1">
+        <main className="flex-1 w-full relative">
            {children}
-        </div>
+        </main>
       </PresentationProvider>
     </section>
   );
