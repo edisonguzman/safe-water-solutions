@@ -30,7 +30,7 @@ export default function PendingApprovalPage() {
         </h1>
         
         <p className="text-gray-600 mb-8">
-          Thanks for joining **Safe Water Solutions**. To maintain project security, an administrator must manually verify your account before you can access the sales presentation.
+          Thanks for joining **Safe Water CMS**. To maintain project security, an administrator must manually verify your account before you can access the sales presentation.
         </p>
 
         <div className="space-y-4">
@@ -47,7 +47,7 @@ export default function PendingApprovalPage() {
       </div>
       
       <p className="mt-8 text-xs text-gray-400 uppercase tracking-widest">
-        Safe Water Solutions © 2026
+        Safe Water CMS © 2026
       </p>
     </div>
   );
