@@ -33,4 +33,10 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch admin stats' }, { status: 500 });
   }
+} 
+const { sessionClaims } = await auth();
+
+// Ensure the user has the 'admin' role in their metadata
+if (sessionClaims?.metadata?.role !== 'admin') {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
 }

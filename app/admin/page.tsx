@@ -1,7 +1,7 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { sql } from "@/app/lib/db";
-import { Users, Droplets, TrendingUp, DollarSign, ShieldCheck } from "lucide-react";
+import { Users, Droplets, TrendingUp, DollarSign, ShieldCheck, UserCog, ShieldAlert } from "lucide-react";
 
 export default async function AdminDashboard() {
   const client = await clerkClient();
@@ -27,6 +27,17 @@ export default async function AdminDashboard() {
     const client = await clerkClient();
     await client.users.updateUserMetadata(userId, {
       publicMetadata: { approved: !currentStatus },
+    });
+    revalidatePath("/admin");
+  }
+
+  // Server Action for Role Management
+  async function toggleRole(userId: string, currentRole: string) {
+    "use server";
+    const client = await clerkClient();
+    const newRole = currentRole === "admin" ? "user" : "admin";
+    await client.users.updateUserMetadata(userId, {
+      publicMetadata: { role: newRole },
     });
     revalidatePath("/admin");
   }
@@ -75,8 +86,8 @@ export default async function AdminDashboard() {
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider">Name</th>
-                <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider">Email</th>
+                <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider">User</th>
+                <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider">Role</th>
                 <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider">Status</th>
                 <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider text-right">Actions</th>
               </tr>
@@ -84,14 +95,26 @@ export default async function AdminDashboard() {
             <tbody className="divide-y divide-slate-100">
               {users.map((user) => {
                 const isApproved = !!user.publicMetadata.approved;
+                const isAdmin = user.publicMetadata.role === "admin";
                 const email = user.emailAddresses[0]?.emailAddress;
                 
                 return (
                   <tr key={user.id} className="hover:bg-blue-50/50 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-slate-900">
-                      {user.firstName} {user.lastName}
+                    <td className="px-6 py-4">
+                      <div className="font-semibold text-slate-900">{user.firstName} {user.lastName}</div>
+                      <div className="text-xs text-slate-500">{email}</div>
                     </td>
-                    <td className="px-6 py-4 text-slate-600">{email}</td>
+                    <td className="px-6 py-4">
+                      {isAdmin ? (
+                        <span className="flex items-center gap-1 w-fit px-3 py-1 text-[10px] font-black uppercase bg-purple-100 text-purple-700 rounded-full">
+                          <ShieldAlert size={12} /> Admin
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 w-fit px-3 py-1 text-[10px] font-black uppercase bg-slate-100 text-slate-600 rounded-full">
+                          <UserCog size={12} /> Sales Rep
+                        </span>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       {isApproved ? (
                         <span className="px-3 py-1 text-xs font-black uppercase bg-green-100 text-green-700 rounded-full">
@@ -104,18 +127,31 @@ export default async function AdminDashboard() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <form action={toggleApproval.bind(null, user.id, isApproved)}>
-                        <button
-                          type="submit"
-                          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm ${
-                            isApproved 
-                              ? "bg-white text-red-600 border border-red-200 hover:bg-red-50" 
-                              : "bg-blue-600 text-white hover:bg-blue-700"
-                          }`}
-                        >
-                          {isApproved ? "Revoke Access" : "Approve Rep"}
-                        </button>
-                      </form>
+                      <div className="flex justify-end gap-2">
+                        {/* Role Toggle */}
+                        <form action={toggleRole.bind(null, user.id, isAdmin ? "admin" : "user")}>
+                          <button
+                            type="submit"
+                            className="px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 hover:bg-slate-50 transition-all"
+                          >
+                            {isAdmin ? "Demote to Rep" : "Promote to Admin"}
+                          </button>
+                        </form>
+
+                        {/* Approval Toggle */}
+                        <form action={toggleApproval.bind(null, user.id, isApproved)}>
+                          <button
+                            type="submit"
+                            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                              isApproved 
+                                ? "bg-white text-red-600 border border-red-200 hover:bg-red-50" 
+                                : "bg-blue-600 text-white hover:bg-blue-700"
+                            }`}
+                          >
+                            {isApproved ? "Revoke Access" : "Approve Rep"}
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 );

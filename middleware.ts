@@ -1,44 +1,40 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-// 1. Define public routes (anyone can see these)
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)', 
   '/sign-up(.*)', 
-  '/pending-approval'
+  '/pending-approval',
+  '/' // Added root if it's a landing page
 ]);
 
-// 2. Define admin-only routes
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
-  const { userId, sessionClaims } = await auth();
+  const { userId, sessionClaims, redirectToSignIn } = await auth();
 
-  // If the user isn't logged in and tries to access a private route
+  // 1. Force Sign-in for private routes
   if (!userId && !isPublicRoute(req)) {
-    return (await auth()).redirectToSignIn();
+    return redirectToSignIn();
   }
 
-  // If logged in, grab the metadata from session claims
-  // Ensure your Clerk Dashboard is configured to include 'metadata' in the JWT session tokens
+  // Cast metadata for TypeScript safety
   const metadata = sessionClaims?.metadata as { role?: string; approved?: boolean } | undefined;
 
-  // 3. Admin Protection: Redirect non-admins away from /admin
+  // 2. Admin Protection: Redirect non-admins away from /admin
   if (isAdminRoute(req) && metadata?.role !== 'admin') {
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
-  // 4. Approval Protection: Redirect unapproved users to the pending page
-  // We skip this check if they are already on the pending page
-  // Admins bypass this check entirely
-  if (
-    userId && 
-    !isPublicRoute(req) && 
-    metadata?.role !== 'admin' && 
-    !metadata?.approved
-  ) {
+  // 3. Approval Protection: Redirect unapproved users (unless they are Admin)
+  const isApproved = metadata?.approved === true;
+  const isAdmin = metadata?.role === 'admin';
+
+  if (userId && !isPublicRoute(req) && !isAdmin && !isApproved) {
     return NextResponse.redirect(new URL('/pending-approval', req.url));
   }
+
+  return NextResponse.next();
 });
 
 export const config = {
