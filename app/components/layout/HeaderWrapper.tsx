@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import ConnectionStatus from "./ConnectionStatus";
 
 export default function HeaderWrapper({ 
   children 
@@ -14,5 +15,12 @@ export default function HeaderWrapper({
 
   if (isPresentationMode) return null;
 
-  return <>{children}</>;
+  return (
+    <>
+      <div className="fixed top-4 right-4 z-[100] md:top-6 md:right-8">
+        <ConnectionStatus />
+      </div>
+      {children}
+    </>
+  );
 }

@@ -3,6 +3,7 @@ import { sql } from "@/app/lib/db";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import Link from "next/link";
 import DashboardActions from "@/app/components/DashboardActions";
+import SyncTrigger from "@/app/components/SyncTrigger";
 
 export default async function SalesDashboard({ 
   searchParams 
@@ -160,6 +161,7 @@ export default async function SalesDashboard({
             </div>
           )}
         </div>
+        <SyncTrigger />
       </main>
     </div>
   );
