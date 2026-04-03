@@ -28,13 +28,17 @@ interface WaterTestResults {
   nitrates: string;
 }
 
-// UPDATED: Added missing fields required by Slide2_WaterCosts
 interface FinancialInputs {
   weeklyGroceryBill: number;
   productPercentage: number;
   monthlyBottledWaterCost: number;
-  weeklyBottledWaterCost: number; // Added back for Slide2 logic
-  monthlyFilterCost: number;      // Added back for Slide2 logic
+  weeklyBottledWaterCost: number;
+  monthlyFilterCost: number;
+}
+
+// Added the interface for the Issues Agreement slide
+interface WaterIssuesAgreement {
+  agreesWithIssues: boolean;
 }
 
 interface PresentationState {
@@ -45,6 +49,8 @@ interface PresentationState {
     buysBottled: boolean;
   };
   financialInputs: FinancialInputs;
+  // UPDATED: Added key to PresentationState
+  waterIssuesAgreement: WaterIssuesAgreement;
 }
 
 // 2. Initial State
@@ -80,8 +86,12 @@ const initialState: PresentationState = {
     weeklyGroceryBill: 0,
     productPercentage: 0.15,
     monthlyBottledWaterCost: 0,
-    weeklyBottledWaterCost: 0, // Initialized
-    monthlyFilterCost: 0,      // Initialized
+    weeklyBottledWaterCost: 0,
+    monthlyFilterCost: 0,
+  },
+  // UPDATED: Initialized the agreement state
+  waterIssuesAgreement: {
+    agreesWithIssues: false,
   },
 };
 
@@ -91,7 +101,9 @@ type Action =
   | { type: "UPDATE_PROSPECT"; payload: Partial<ProspectInfo> }
   | { type: "UPDATE_COST_PREFS"; payload: Partial<{ buysBottled: boolean }> }
   | { type: "UPDATE_TEST"; payload: Partial<WaterTestResults> }
-  | { type: "UPDATE_FINANCIAL"; payload: Partial<FinancialInputs> };
+  | { type: "UPDATE_FINANCIAL"; payload: Partial<FinancialInputs> }
+  // UPDATED: Added Action type
+  | { type: "UPDATE_ISSUES_AGREEMENT"; payload: Partial<WaterIssuesAgreement> };
 
 function presentationReducer(state: PresentationState, action: Action): PresentationState {
   switch (action.type) {
@@ -117,6 +129,12 @@ function presentationReducer(state: PresentationState, action: Action): Presenta
         ...state,
         financialInputs: { ...state.financialInputs, ...action.payload }
       };
+    // UPDATED: Added Reducer case
+    case "UPDATE_ISSUES_AGREEMENT":
+      return {
+        ...state,
+        waterIssuesAgreement: { ...state.waterIssuesAgreement, ...action.payload }
+      };
     default:
       return state;
   }
@@ -137,6 +155,8 @@ export function PresentationProvider({ children }: { children: ReactNode }) {
     if (section === "waterTestResults") dispatch({ type: "UPDATE_TEST", payload: data });
     if (section === "waterCostPreferences") dispatch({ type: "UPDATE_COST_PREFS", payload: data });
     if (section === "financialInputs") dispatch({ type: "UPDATE_FINANCIAL", payload: data });
+    // UPDATED: Added section check for the dispatcher
+    if (section === "waterIssuesAgreement") dispatch({ type: "UPDATE_ISSUES_AGREEMENT", payload: data });
   }, []);
 
   const value = useMemo(() => ({ state, updateState }), [state, updateState]);

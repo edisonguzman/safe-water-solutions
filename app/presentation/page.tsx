@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { PresentationProvider, usePresentation } from "@/app/context/PresentationContext";
 import { SignOutButton } from "@clerk/nextjs";
-// Import All Slide Components
 import Slide1_ProspectInfo from "@/app/components/presentation/Slide1_ProspectInfo";
 import Slide2_HelpRequest from "@/app/components/presentation/Slide2_HelpRequest";
 import Slide3_BottledWaterCheck from "@/app/components/presentation/Slide3_BottledWaterCheck";
@@ -16,6 +15,12 @@ import Slide_HomeBenefits from "@/app/components/presentation/Slide_HomeBenefits
 import Slide_Summary from "@/app/components/presentation/Slide_Summary";
 import Slide5_Summary from "@/app/components/presentation/Slide5_Summary";
 import Slide_ThankYou from "@/app/components/presentation/Slide_ThankYou";
+import IssuesAgreement from "@/app/components/presentation/IssuesAgreement";
+import HardWaterDefinition from "@/app/components/presentation/HardWaterDefinition";
+import HomeownerPriorities from "@/app/components/presentation/HomeownerPriorities";
+import ValueAffordability from "@/app/components/presentation/ValueAffordability";
+import SendReport from "@/app/components/presentation/SendReport";
+import CostComparison from "@/app/components/presentation/CostComparison";
 
 
 export default function PresentationPage() {
@@ -44,20 +49,27 @@ function PresentationViewer() {
     }
   };
 
-  // ONE single source of truth for your slides
+  // Updated source of truth for your slides
   const slides = [
-    <Slide1_ProspectInfo key="s1" />,
-    <Slide2_HelpRequest key="s2" />,
-    <Slide3_BottledWaterCheck key="s3" onNext={handleNext} />,
-    <Slide2_WaterCosts key="s4" />,
-    <Slide_ThreeTypes key="s5" />,
-    <Slide_WaterTestResults key="s6" />,
-    <Slide3_GrocerySavings key="s7" />,
-    <Slide4_DailySavings key="s8" />,
+    <Slide1_ProspectInfo key="s1" />, // Slide 1
+    <Slide2_HelpRequest key="s2" />, // Slide 2
+    <Slide3_BottledWaterCheck key="s3" onNext={handleNext} />, // Slide 3
+    <Slide2_WaterCosts key="s4" />, // Slide 4
+    <Slide_ThreeTypes key="s5" />, // Slide 5
+    <Slide_WaterTestResults key="s6" />, // Slide 6
+    <Slide4_DailySavings key="s8" />, // Slide 7
+    <Slide3_GrocerySavings key="s7" />, // Slide 8
+    <IssuesAgreement key="issues-agree" onNext={handleNext} />, // Slide 9
+    <HardWaterDefinition key="hard-water-def" onNext={handleNext} />, // Slide 10
+    <Slide_ThankYou key="thanks" />, // Slide 11
+    <HomeownerPriorities key="priorities" />, // Slide 12
+    <ValueAffordability key="value-afford" onNext={handleNext} />, // Slide 13
+    <CostComparison key="cost-comparison" />, // Slide 14
     <Slide_HomeBenefits key="s_benefits" onNext={handleNext} />,
     <Slide_Summary key="summary" />,
     <Slide5_Summary key="s9" />,
-    <Slide_ThankYou key="thanks" />
+    <SendReport key="send-report" onNext={handleNext} />,
+    
   ];
 
   const totalSlides = slides.length;

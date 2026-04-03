@@ -1,98 +1,63 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { usePresentation } from "@/app/context/PresentationContext";
 
-export default function Slide_ThankYou() {
+interface ThankYouProps {
+  onNext?: () => void;
+  onPrev?: () => void;
+}
+
+export default function Slide_ThankYou({ onNext, onPrev }: ThankYouProps) {
   const { state } = usePresentation();
-  const hasSaved = useRef(false);
-  const [syncStatus, setSyncStatus] = useState<"idle" | "saving" | "offline_saved" | "synced" | "error">("idle");
-
-  useEffect(() => {
-    async function handleSaveProcess() {
-      if (hasSaved.current) return;
-      setSyncStatus("saving");
-
-      const payload = {
-        waterSource: state.waterSource,
-        prospectInfo: state.prospectInfo,
-        waterTestResults: state.waterTestResults,
-        financialInputs: state.financialInputs,
-        timestamp: new Date().toISOString()
-      };
-
-      try {
-        // 1. Attempt the Live Save
-        const response = await fetch("/api/prospects", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        if (response.ok) {
-          setSyncStatus("synced");
-          hasSaved.current = true;
-          // Optionally: Trigger the Email API here as well
-          await fetch("/api/send-email", { 
-            method: "POST", 
-            body: JSON.stringify({ prospectId: (await response.json()).prospectId }) 
-          });
-        } else {
-          throw new Error("Server reached but failed to save");
-        }
-      } catch (error) {
-        // 2. Offline Fallback: Save to Local Storage
-        console.warn("Offline or Connection Error. Saving locally...");
-        
-        const existingQueue = JSON.parse(localStorage.getItem("offline_leads") || "[]");
-        existingQueue.push(payload);
-        localStorage.setItem("offline_leads", JSON.stringify(existingQueue));
-        
-        setSyncStatus("offline_saved");
-        hasSaved.current = true;
-      }
-    }
-
-    handleSaveProcess();
-  }, [state]);
 
   return (
-    <div className="h-full flex flex-col items-center justify-center text-center space-y-8 animate-in fade-in zoom-in duration-700">
-      <div className="space-y-2">
-        <h2 className="text-4xl font-black text-blue-900">
+    <div className="h-full flex flex-col items-center justify-between text-center py-12 animate-in fade-in zoom-in duration-700">
+      
+      {/* Top Section: Prospect Names */}
+      <div className="space-y-4">
+        <h2 className="text-4xl md:text-5xl font-black text-blue-900">
           {state.prospectInfo.firstName1} {state.prospectInfo.firstName2 ? `& ${state.prospectInfo.firstName2}` : ''}
         </h2>
-        
-        {/* Sync Status Badge for the Salesperson */}
-        <div className="mt-4 flex justify-center">
-          {syncStatus === "synced" && (
-            <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-xs font-bold uppercase border border-green-200">
-              ✓ Data Synced & Email Sent
-            </span>
-          )}
-          {syncStatus === "offline_saved" && (
-            <span className="bg-amber-100 text-amber-700 px-4 py-1 rounded-full text-xs font-bold uppercase border border-amber-200">
-              ⚠ Saved Locally (Offline)
-            </span>
-          )}
-          {syncStatus === "saving" && (
-            <span className="bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-xs font-bold uppercase animate-pulse">
-              Saving Report...
-            </span>
-          )}
-        </div>
+        <div className="h-1 w-24 bg-blue-600 mx-auto rounded-full" />
       </div>
 
-      <div className="bg-blue-600 p-12 rounded-[3rem] shadow-2xl">
-        <h1 className="text-7xl font-black text-white mb-4 uppercase tracking-tighter">Thank You</h1>
-        <p className="text-blue-100 text-2xl font-medium tracking-wide">
+      {/* Middle Section: Thank You Branding */}
+      <div className="bg-blue-600 p-12 md:p-16 rounded-[3rem] shadow-2xl max-w-3xl mx-6">
+        <h1 className="text-7xl md:text-6xl font-black text-white mb-4 uppercase tracking-tighter">
+          Thank You
+        </h1>
+        <p className="text-blue-100 text-2xl md:text-3xl font-medium tracking-wide">
           For your time and attention today.
         </p>
       </div>
 
-      <h3 className="text-3xl font-bold text-gray-800 pt-8 border-t-2 border-gray-100 w-full max-w-md">
-        Do you have any questions?
-      </h3>
+      {/* Bottom Section: Questions & Navigation */}
+      <div className="w-full max-w-2xl px-6 space-y-10">
+        <h3 className="text-3xl font-bold text-gray-800 pt-8 border-t-2 border-gray-100 w-full">
+          Do you have any questions?
+        </h3>
+
+        {/* Local Navigation Buttons for Tablet-First accessibility */}
+        <div className="flex gap-6 w-full">
+          {onPrev && (
+            <button
+              onClick={onPrev}
+              className="flex-1 py-6 bg-gray-100 text-gray-600 text-xl font-bold rounded-2xl shadow-md hover:bg-gray-200 transition-all active:scale-95"
+            >
+              ← PREVIOUS
+            </button>
+          )}
+          {onNext && (
+            <button
+              onClick={onNext}
+              className="flex-1 py-6 bg-blue-600 text-white text-xl font-bold rounded-2xl shadow-xl hover:bg-blue-700 transition-all active:scale-95 uppercase"
+            >
+              Finish Presentation
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
