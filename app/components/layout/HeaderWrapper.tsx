@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import ConnectionStatus from "./ConnectionStatus";
 
 export default function HeaderWrapper({ 
   children 
@@ -10,16 +9,14 @@ export default function HeaderWrapper({
 }) {
   const pathname = usePathname();
   
-  // Hide header if on the presentation page or any sub-slide
+  // Hide header/wrapper logic if on the presentation page
   const isPresentationMode = pathname?.startsWith("/presentation");
 
   if (isPresentationMode) return null;
 
   return (
     <>
-      <div className="fixed top-4 right-4 z-[100] md:top-6 md:right-8">
-        <ConnectionStatus />
-      </div>
+      {/* Removed ConnectionStatus div from here */}
       {children}
     </>
   );

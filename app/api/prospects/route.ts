@@ -7,13 +7,19 @@ export async function POST(request: Request) {
     const { userId } = await auth();
     const body = await request.json();
     
-    // Destructure everything from the presentation state
+    // CHANGE: Extract from body.state because that's what is being sent
     const { 
       waterSource, 
       prospectInfo, 
       waterTestResults, 
       financialInputs 
-    } = body;
+    } = body.state || body; // Fallback to body just in case
+
+    // Check if prospectInfo exists to prevent the crash
+    if (!prospectInfo) {
+      console.error("Missing prospectInfo in request body");
+      return NextResponse.json({ error: "Missing required data" }, { status: 400 });
+    }
 
     const result = await sql`
       INSERT INTO prospects (
@@ -33,13 +39,13 @@ export async function POST(request: Request) {
         ${prospectInfo.state || ''}, ${prospectInfo.zip || ''},
         ${prospectInfo.email || ''}, ${prospectInfo.phone || ''},
         ${waterSource || 'City Water'},
-        ${waterTestResults.hardness || 0}, ${waterTestResults.tds || 0},
-        ${waterTestResults.ph || 7}, ${waterTestResults.chlorine || 0},
-        ${waterTestResults.iron || 0}, ${waterTestResults.nitrates || 0},
-        ${financialInputs.weeklyGroceryBill || 0}, 
-        ${financialInputs.productPercentage || 0.15},
-        ${financialInputs.weeklyBottledWaterCost || 0},
-        ${financialInputs.monthlyFilterCost || 0},
+        ${waterTestResults?.hardness || 0}, ${waterTestResults?.tds || 0},
+        ${waterTestResults?.ph || 7}, ${waterTestResults?.chlorine || 0},
+        ${waterTestResults?.iron || 0}, ${waterTestResults?.nitrates || 0},
+        ${financialInputs?.weeklyGroceryBill || 0}, 
+        ${financialInputs?.productPercentage || 0.15},
+        ${financialInputs?.weeklyBottledWaterCost || 0},
+        ${financialInputs?.monthlyFilterCost || 0},
         ${prospectInfo.householdSize || 1}
       )
       RETURNING id;
