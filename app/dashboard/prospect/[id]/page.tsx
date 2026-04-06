@@ -4,12 +4,15 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Droplets, Receipt, Home, Calendar } from "lucide-react";
 import SendEmailButton from "@/app/components/SendEmailButton";
+import EditProspectModal from "@/app/components/presentation/EditProspectModal";
+import { Edit2 } from "lucide-react"; // Import the icon
 
 export default function ProspectDetail() {
   const { id } = useParams();
   const router = useRouter();
   const [prospect, setProspect] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditOpen, setIsEditOpen] = useState(false); // 2. Add modal state
 
   useEffect(() => {
     async function getDetails() {
@@ -42,6 +45,12 @@ export default function ProspectDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
+      <EditProspectModal 
+        prospect={prospect} 
+        isOpen={isEditOpen} 
+        onClose={() => setIsEditOpen(false)} 
+      />
+
       {/* Top Navigation */}
       <div className="bg-white border-b px-6 py-4 mb-8 sticky top-0 z-10">
         <button 
@@ -49,6 +58,12 @@ export default function ProspectDetail() {
           className="flex items-center gap-2 text-blue-600 font-bold hover:text-blue-800 transition-colors"
         >
           <ArrowLeft size={20} /> Back to Dashboard
+        </button>
+        <button 
+          onClick={() => setIsEditOpen(true)}
+          className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-black text-xs uppercase hover:bg-blue-100 transition-all"
+        >
+          <Edit2 size={16} /> Edit Info
         </button>
       </div>
 

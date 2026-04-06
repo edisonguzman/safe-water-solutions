@@ -67,3 +67,54 @@ export async function DELETE(
     return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
   }
 }
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId, sessionClaims } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { id } = await params;
+    const body = await request.json();
+    const isAdmin = (sessionClaims?.metadata as any)?.role === 'admin';
+
+    // 1. Security Check: Reps can only update their own leads unless they are an admin
+    const checkOwnership = await sql`
+      SELECT sales_rep_id FROM prospects WHERE id = ${id}
+    `;
+
+    if (checkOwnership.length === 0) {
+      return NextResponse.json({ error: "Prospect not found" }, { status: 404 });
+    }
+
+    if (!isAdmin && checkOwnership[0].sales_rep_id !== userId) {
+      return NextResponse.json({ error: "Forbidden: Not your lead" }, { status: 403 });
+    }
+
+    // 2. Perform the Update
+    // We use a safe approach to update only the fields provided in the body
+    const result = await sql`
+      UPDATE prospects
+      SET 
+        first_name1 = ${body.first_name1 ?? sql`first_name1`},
+        last_name1 = ${body.last_name1 ?? sql`last_name1`},
+        first_name2 = ${body.first_name2 ?? sql`first_name2`},
+        last_name2 = ${body.last_name2 ?? sql`last_name2`},
+        email = ${body.email ?? sql`email`},
+        phone = ${body.phone ?? sql`phone`},
+        address = ${body.address ?? sql`address`},
+        city = ${body.city ?? sql`city`},
+        state = ${body.state ?? sql`state`},
+        zip = ${body.zip ?? sql`zip`},
+        water_source = ${body.water_source ?? sql`water_source`}
+      WHERE id = ${id}
+      RETURNING *;
+    `;
+
+    return NextResponse.json({ success: true, prospect: result[0] });
+  } catch (error) {
+    console.error("Update Error:", error);
+    return NextResponse.json({ error: "Failed to update record" }, { status: 500 });
+  }
+}
