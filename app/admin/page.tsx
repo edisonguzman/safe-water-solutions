@@ -1,16 +1,26 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { sql } from "@/app/lib/db";
-import { Users, Droplets, TrendingUp, DollarSign, ShieldCheck, UserCog, ShieldAlert, FileText } from "lucide-react";
+import { Users, Droplets, TrendingUp, DollarSign, ShieldCheck, UserCog, ShieldAlert, FileText, ChevronUp, ChevronDown } from "lucide-react";
+import Link from "next/link";
 
-export default async function AdminDashboard() {
+export const dynamic = 'force-dynamic';
+
+export default async function AdminDashboard(props: {
+  searchParams: Promise<{ sort?: string; order?: string }>;
+}) {
   const client = await clerkClient();
   
-  // 1. Fetch Clerk Users
+  // 1. Await the searchParams immediately
+  const params = await props.searchParams;
+  const sort = params.sort || "date";
+  const order = params.order || "desc";
+
+  // 2. Fetch Clerk Users
   const response = await client.users.getUserList();
   const users = response.data;
 
-  // 2. Fetch Neon Analytics
+  // 3. Fetch Neon Analytics (DEFINING STATS HERE)
   const statsResult = await sql`
     SELECT 
       COUNT(*) as total_prospects,
@@ -19,24 +29,35 @@ export default async function AdminDashboard() {
       SUM(((NULLIF(weekly_grocery_bill, 0) * 4 * NULLIF(product_percentage, 0) * 0.75) + NULLIF(monthly_bottled_water_cost, 0))) as total_savings
     FROM prospects
   `;
-  const stats = statsResult[0];
+  const stats = statsResult[0] || {};
 
-// 3. Fetch All Prospects and Create Rep Lookup Map
-  const allProspects = await sql`
-    SELECT * FROM prospects ORDER BY created_at DESC
-  `;
-
+  // 4. Robust Name Lookup
   const repLookup = users.reduce((acc: any, user) => {
-    // Robust name check: Fallback to email if first/last names are null
     const fullName = user.firstName && user.lastName 
       ? `${user.firstName} ${user.lastName}` 
       : (user.emailAddresses[0]?.emailAddress || "Active Rep");
-    
     acc[user.id] = fullName;
     return acc;
   }, {});
 
-  // Server Action for Clerk Approval
+  // 5. Fetch All Prospects with Dynamic Sorting
+  const sortMap: Record<string, string> = {
+    date: "created_at",
+    prospect: "first_name1",
+    rep: "sales_rep_id",
+    location: "city",
+    source: "water_source"
+  };
+
+  const dbColumn = sortMap[sort] || "created_at";
+  const dbOrder = order === "asc" ? "ASC" : "DESC";
+
+  // Using .query() to bypass the tagged-template identifier restriction
+  const allProspects = await sql.query(
+    `SELECT * FROM prospects ORDER BY ${dbColumn} ${dbOrder}`
+  );
+
+  // Server Actions
   async function toggleApproval(userId: string, currentStatus: boolean) {
     "use server";
     const client = await clerkClient();
@@ -46,7 +67,6 @@ export default async function AdminDashboard() {
     revalidatePath("/admin");
   }
 
-  // Server Action for Role Management
   async function toggleRole(userId: string, currentRole: string) {
     "use server";
     const client = await clerkClient();
@@ -57,8 +77,17 @@ export default async function AdminDashboard() {
     revalidatePath("/admin");
   }
 
+  // Helper to build Sort Links
+  const getSortLink = (field: string) => {
+    const newOrder = sort === field && order === "asc" ? "desc" : "asc";
+    return `?sort=${field}&order=${newOrder}`;
+  };
+
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-12 bg-slate-50 min-h-screen">
+    <div 
+      key={`${sort}-${order}`} 
+      className="p-8 max-w-7xl mx-auto space-y-12 bg-slate-50 min-h-screen"
+    >
       
       {/* SECTION 1: EXECUTIVE OVERVIEW */}
       <header>
@@ -67,30 +96,13 @@ export default async function AdminDashboard() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard 
-          title="Total Reports" 
-          value={stats.total_prospects || 0} 
-          icon={<Droplets className="text-blue-600" />} 
-        />
-        <StatCard 
-          title="Active Sales Reps" 
-          value={stats.active_reps || 0} 
-          icon={<Users className="text-purple-600" />} 
-        />
-        <StatCard 
-          title="Avg. Hardness" 
-          value={`${Math.round(stats.avg_hardness || 0)} GPG`} 
-          icon={<TrendingUp className="text-orange-600" />} 
-        />
-        <StatCard 
-          title="Total Savings Found" 
-          value={`$${Math.round(stats.total_savings || 0).toLocaleString()}`} 
-          icon={<DollarSign className="text-green-600" />} 
-          subtitle="Projected Monthly"
-        />
+        <StatCard title="Total Reports" value={stats.total_prospects || 0} icon={<Droplets className="text-blue-600" />} />
+        <StatCard title="Active Sales Reps" value={stats.active_reps || 0} icon={<Users className="text-purple-600" />} />
+        <StatCard title="Avg. Hardness" value={`${Math.round(stats.avg_hardness || 0)} GPG`} icon={<TrendingUp className="text-orange-600" />} />
+        <StatCard title="Total Savings Found" value={`$${Math.round(stats.total_savings || 0).toLocaleString()}`} icon={<DollarSign className="text-green-600" />} subtitle="Projected Monthly" />
       </div>
 
-      {/* SECTION 2: COMPANY WIDE PROSPECTS (NEWLY ADDED) */}
+      {/* SECTION 2: COMPANY WIDE PROSPECTS */}
       <section className="space-y-6">
         <div className="flex items-center gap-2 border-b border-slate-200 pb-4">
           <FileText className="text-blue-900" />
@@ -101,10 +113,11 @@ export default async function AdminDashboard() {
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider">Date</th>
-                <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider">Prospect</th>
-                <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider">Sales Rep</th>
-                <th className="px-6 py-4 font-bold text-slate-700 uppercase text-xs tracking-wider">Location</th>
+                <SortHeader label="Date" field="date" currentSort={sort} currentOrder={order} link={getSortLink('date')} />
+                <SortHeader label="Prospect" field="prospect" currentSort={sort} currentOrder={order} link={getSortLink('prospect')} />
+                <SortHeader label="Sales Rep" field="rep" currentSort={sort} currentOrder={order} link={getSortLink('rep')} />
+                <SortHeader label="Location" field="location" currentSort={sort} currentOrder={order} link={getSortLink('location')} />
+                <SortHeader label="Water Source" field="source" currentSort={sort} currentOrder={order} link={getSortLink('source')} />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -124,6 +137,9 @@ export default async function AdminDashboard() {
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-600 font-medium">
                     {p.city}, {p.state}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-600 font-medium">
+                    {p.water_source || "N/A"}
                   </td>
                 </tr>
               ))}
@@ -154,7 +170,6 @@ export default async function AdminDashboard() {
                 const isApproved = !!user.publicMetadata.approved;
                 const isAdmin = user.publicMetadata.role === "admin";
                 const email = user.emailAddresses[0]?.emailAddress;
-                
                 return (
                   <tr key={user.id} className="hover:bg-blue-50/50 transition-colors">
                     <td className="px-6 py-4">
@@ -174,37 +189,20 @@ export default async function AdminDashboard() {
                     </td>
                     <td className="px-6 py-4">
                       {isApproved ? (
-                        <span className="px-3 py-1 text-xs font-black uppercase bg-green-100 text-green-700 rounded-full">
-                          Approved
-                        </span>
+                        <span className="px-3 py-1 text-xs font-black uppercase bg-green-100 text-green-700 rounded-full">Approved</span>
                       ) : (
-                        <span className="px-3 py-1 text-xs font-black uppercase bg-amber-100 text-amber-700 rounded-full">
-                          Pending
-                        </span>
+                        <span className="px-3 py-1 text-xs font-black uppercase bg-amber-100 text-amber-700 rounded-full">Pending</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        {/* Role Toggle */}
                         <form action={toggleRole.bind(null, user.id, isAdmin ? "admin" : "user")}>
-                          <button
-                            type="submit"
-                            className="px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 hover:bg-slate-50 transition-all"
-                          >
+                          <button type="submit" className="px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 hover:bg-slate-50 transition-all">
                             {isAdmin ? "Demote to Rep" : "Promote to Admin"}
                           </button>
                         </form>
-
-                        {/* Approval Toggle */}
                         <form action={toggleApproval.bind(null, user.id, isApproved)}>
-                          <button
-                            type="submit"
-                            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
-                              isApproved 
-                                ? "bg-white text-red-600 border border-red-200 hover:bg-red-50" 
-                                : "bg-blue-600 text-white hover:bg-blue-700"
-                            }`}
-                          >
+                          <button type="submit" className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${isApproved ? "bg-white text-red-600 border border-red-200 hover:bg-red-50" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
                             {isApproved ? "Revoke Access" : "Approve Rep"}
                           </button>
                         </form>
@@ -221,7 +219,33 @@ export default async function AdminDashboard() {
   );
 }
 
-// Internal Helper Component
+// Internal Helper for Sortable Headers
+function SortHeader({ label, field, currentSort, currentOrder, link }: any) {
+  const isActive = currentSort === field;
+  
+  return (
+    <th className="px-6 py-4">
+      <Link 
+        href={link} 
+        prefetch={false} // FORCES FRESH DATA
+        className="flex items-center gap-1 font-bold text-slate-700 uppercase text-[10px] tracking-wider group hover:text-blue-600 transition-colors"
+      >
+        {label}
+        <div className="flex flex-col ml-1">
+          <ChevronUp 
+            size={12} 
+            className={`${isActive && currentOrder === 'asc' ? 'text-blue-600 scale-125' : 'text-slate-300'} group-hover:text-blue-400 transition-transform`} 
+          />
+          <ChevronDown 
+            size={12} 
+            className={`${isActive && currentOrder === 'desc' ? 'text-blue-600 scale-125' : 'text-slate-300'} group-hover:text-blue-400 transition-transform`} 
+          />
+        </div>
+      </Link>
+    </th>
+  );
+}
+
 function StatCard({ title, value, icon, subtitle }: any) {
   return (
     <div className="bg-white p-6 rounded-3xl shadow-md border border-slate-100 flex flex-col">
