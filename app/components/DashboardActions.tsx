@@ -8,10 +8,17 @@ export default function DashboardActions({ prospect, allProspects }: { prospect?
   const router = useRouter();
 
   const handleDelete = async () => {
-    if (!confirm(`Delete ${prospect.first_name1}'s record?`)) return;
-    const res = await fetch(`/api/prospects/${prospect.id}`, { method: "DELETE" });
-    if (res.ok) router.refresh();
-  };
+  if (!confirm(`Delete ${prospect.first_name1}'s record?`)) return;
+  const res = await fetch(`/api/prospects/${prospect.id}`, { method: "DELETE" });
+  
+  if (res.ok) {
+    // If you're on the detail page, send them back to the list
+    // If you're on the dashboard list, refresh it
+    router.refresh(); 
+  } else {
+    alert("Could not delete record. You may not have permission.");
+  }
+};
 
   const downloadCSV = () => {
     if (!allProspects) return;
