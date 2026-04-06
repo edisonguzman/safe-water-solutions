@@ -20,13 +20,11 @@ export const metadata: Metadata = {
   title: "Safe Water CMS",
   description: "Interactive Sales & Water Testing Platform",
   icons: {
-    // This covers standard favicons and the high-res tablet bookmark
     icon: "/favicon.ico",
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
-  // This makes the app open without browser bars on tablet
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -47,19 +45,31 @@ export default async function RootLayout({
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           
-          {/* Use the wrapper to conditionally hide the nav */}
           <HeaderWrapper>
             {user && (
               <nav className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
                 <div className="flex items-center gap-8">
-                  <Link href="/dashboard" className="text-xl font-black text-blue-900 tracking-tighter">
+                  {/* Logo points to main Prospects page */}
+                  <Link href="/dashboard/prospects" className="text-xl font-black text-blue-900 tracking-tighter">
                     SAFE WATER CMS
                   </Link>
                   
                   <div className="hidden md:flex gap-6 items-center">
-                    <Link href="/dashboard" className="text-sm font-bold text-gray-500 hover:text-blue-600 transition-colors">
+                    {/* Fixed path to /dashboard/prospects */}
+                    <Link href="/dashboard/" className="text-sm font-bold text-gray-500 hover:text-blue-600 transition-colors">
                       My Leads
                     </Link>
+
+                    {/* The Live Ledger (Input Page) */}
+                    <Link href="/dashboard/sales" className="text-sm font-bold text-gray-500 hover:text-blue-600 transition-colors">
+                      Production Ledger
+                    </Link>
+
+                    {/* The Analytics/Results Page (Initially showed) */}
+                    <Link href="/dashboard/analytics" className="text-sm font-bold text-gray-500 hover:text-blue-600 transition-colors">
+                      Sales Analytics
+                    </Link>
+
                     <Link href="/presentation" className="text-sm font-bold text-gray-500 hover:text-blue-600 transition-colors">
                       New Presentation
                     </Link>
