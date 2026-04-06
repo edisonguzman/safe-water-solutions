@@ -1,63 +1,28 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { sql } from "@/app/lib/db";
-import { Users, Droplets, TrendingUp, DollarSign, ShieldCheck, UserCog, ShieldAlert, FileText, ChevronUp, ChevronDown } from "lucide-react";
-import Link from "next/link";
+import { Users, Droplets, ShieldCheck, UserCog, ShieldAlert } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminDashboard(props: {
-  searchParams: Promise<{ sort?: string; order?: string }>;
-}) {
+export default async function AdminDashboard() {
   const client = await clerkClient();
   
-  // 1. Await the searchParams immediately
-  const params = await props.searchParams;
-  const sort = params.sort || "date";
-  const order = params.order || "desc";
-
-  // 2. Fetch Clerk Users
+  // 1. Fetch Clerk Users
   const response = await client.users.getUserList();
   const users = response.data;
 
-  // 3. Fetch Neon Analytics (DEFINING STATS HERE)
+  // 2. Fetch Neon Analytics for Total Reports
   const statsResult = await sql`
-    SELECT 
-      COUNT(*) as total_prospects,
-      COUNT(DISTINCT sales_rep_id) as active_reps,
-      AVG(NULLIF(hardness, '')::numeric) as avg_hardness,
-      SUM(((NULLIF(weekly_grocery_bill, 0) * 4 * NULLIF(product_percentage, 0) * 0.75) + NULLIF(monthly_bottled_water_cost, 0))) as total_savings
-    FROM prospects
+    SELECT COUNT(*) as total_prospects FROM prospects
   `;
   const stats = statsResult[0] || {};
 
-  // 4. Robust Name Lookup
-  const repLookup = users.reduce((acc: any, user) => {
-    const fullName = user.firstName && user.lastName 
-      ? `${user.firstName} ${user.lastName}` 
-      : (user.emailAddresses[0]?.emailAddress || "Active Rep");
-    acc[user.id] = fullName;
-    return acc;
-  }, {});
+  // 3. Accurate Active Reps Count 
+  // Counts users from Clerk who have publicMetadata.approved === true
+  const activeRepsCount = users.filter(user => !!user.publicMetadata.approved).length;
 
-  // 5. Fetch All Prospects with Dynamic Sorting
-  const sortMap: Record<string, string> = {
-    date: "created_at",
-    prospect: "first_name1",
-    rep: "sales_rep_id",
-    location: "city",
-    source: "water_source"
-  };
-
-  const dbColumn = sortMap[sort] || "created_at";
-  const dbOrder = order === "asc" ? "ASC" : "DESC";
-
-  // Using .query() to bypass the tagged-template identifier restriction
-  const allProspects = await sql.query(
-    `SELECT * FROM prospects ORDER BY ${dbColumn} ${dbOrder}`
-  );
-
-  // Server Actions
+  // Server Action for Clerk Approval
   async function toggleApproval(userId: string, currentStatus: boolean) {
     "use server";
     const client = await clerkClient();
@@ -67,6 +32,7 @@ export default async function AdminDashboard(props: {
     revalidatePath("/admin");
   }
 
+  // Server Action for Role Management
   async function toggleRole(userId: string, currentRole: string) {
     "use server";
     const client = await clerkClient();
@@ -77,78 +43,29 @@ export default async function AdminDashboard(props: {
     revalidatePath("/admin");
   }
 
-  // Helper to build Sort Links
-  const getSortLink = (field: string) => {
-    const newOrder = sort === field && order === "asc" ? "desc" : "asc";
-    return `?sort=${field}&order=${newOrder}`;
-  };
-
   return (
-    <div 
-      key={`${sort}-${order}`} 
-      className="p-8 max-w-7xl mx-auto space-y-12 bg-slate-50 min-h-screen"
-    >
+    <div className="p-8 max-w-7xl mx-auto space-y-12 bg-slate-50 min-h-screen">
       
       {/* SECTION 1: EXECUTIVE OVERVIEW */}
       <header>
         <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter">Executive Overview</h1>
-        <p className="text-slate-500 font-medium">System-wide performance and water quality metrics.</p>
+        <p className="text-slate-500 font-medium">System-wide user access and reporting volume.</p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard title="Total Reports" value={stats.total_prospects || 0} icon={<Droplets className="text-blue-600" />} />
-        <StatCard title="Active Sales Reps" value={stats.active_reps || 0} icon={<Users className="text-purple-600" />} />
-        <StatCard title="Avg. Hardness" value={`${Math.round(stats.avg_hardness || 0)} GPG`} icon={<TrendingUp className="text-orange-600" />} />
-        <StatCard title="Total Savings Found" value={`$${Math.round(stats.total_savings || 0).toLocaleString()}`} icon={<DollarSign className="text-green-600" />} subtitle="Projected Monthly" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <StatCard 
+          title="Total Reports" 
+          value={stats.total_prospects || 0} 
+          icon={<Droplets className="text-blue-600" />} 
+        />
+        <StatCard 
+          title="Active Sales Reps" 
+          value={activeRepsCount} 
+          icon={<Users className="text-purple-600" />} 
+        />
       </div>
 
-      {/* SECTION 2: COMPANY WIDE PROSPECTS */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-2 border-b border-slate-200 pb-4">
-          <FileText className="text-blue-900" />
-          <h2 className="text-2xl font-bold text-blue-900">Company Wide Prospects</h2>
-        </div>
-
-        <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <SortHeader label="Date" field="date" currentSort={sort} currentOrder={order} link={getSortLink('date')} />
-                <SortHeader label="Prospect" field="prospect" currentSort={sort} currentOrder={order} link={getSortLink('prospect')} />
-                <SortHeader label="Sales Rep" field="rep" currentSort={sort} currentOrder={order} link={getSortLink('rep')} />
-                <SortHeader label="Location" field="location" currentSort={sort} currentOrder={order} link={getSortLink('location')} />
-                <SortHeader label="Water Source" field="source" currentSort={sort} currentOrder={order} link={getSortLink('source')} />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {allProspects.map((p) => (
-                <tr key={p.id} className="hover:bg-blue-50/50 transition-colors">
-                  <td className="px-6 py-4 text-xs text-slate-500 font-medium">
-                    {new Date(p.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-slate-900">{p.first_name1} {p.last_name1}</div>
-                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{p.email}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold">
-                      {repLookup[p.sales_rep_id] || "Unknown Rep"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-600 font-medium">
-                    {p.city}, {p.state}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-600 font-medium">
-                    {p.water_source || "N/A"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* SECTION 3: USER MANAGEMENT */}
+      {/* SECTION 2: USER MANAGEMENT */}
       <section className="space-y-6">
         <div className="flex items-center gap-2 border-b border-slate-200 pb-4">
           <ShieldCheck className="text-blue-900" />
@@ -216,33 +133,6 @@ export default async function AdminDashboard(props: {
         </div>
       </section>
     </div>
-  );
-}
-
-// Internal Helper for Sortable Headers
-function SortHeader({ label, field, currentSort, currentOrder, link }: any) {
-  const isActive = currentSort === field;
-  
-  return (
-    <th className="px-6 py-4">
-      <Link 
-        href={link} 
-        prefetch={false} // FORCES FRESH DATA
-        className="flex items-center gap-1 font-bold text-slate-700 uppercase text-[10px] tracking-wider group hover:text-blue-600 transition-colors"
-      >
-        {label}
-        <div className="flex flex-col ml-1">
-          <ChevronUp 
-            size={12} 
-            className={`${isActive && currentOrder === 'asc' ? 'text-blue-600 scale-125' : 'text-slate-300'} group-hover:text-blue-400 transition-transform`} 
-          />
-          <ChevronDown 
-            size={12} 
-            className={`${isActive && currentOrder === 'desc' ? 'text-blue-600 scale-125' : 'text-slate-300'} group-hover:text-blue-400 transition-transform`} 
-          />
-        </div>
-      </Link>
-    </th>
   );
 }
 
