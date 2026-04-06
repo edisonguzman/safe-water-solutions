@@ -54,3 +54,30 @@ img {
 body {
   -webkit-text-size-adjust: 100%;
 }
+
+@media print {
+  /* Hide the UI elements we don't want on the PDF */
+  .print\:hidden, 
+  button, 
+  nav, 
+  .sticky {
+    display: none !important;
+  }
+
+  /* Ensure the background is white and text is sharp */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Remove gray background from cards for the PDF */
+  .bg-gray-50, .bg-green-50 {
+    background: white !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  /* Force the shadow to disappear so it doesn't look like a messy gray box */
+  .shadow-xl, .shadow-sm {
+    shadow: none !important;
+  }
+}

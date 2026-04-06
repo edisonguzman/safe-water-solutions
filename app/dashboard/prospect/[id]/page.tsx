@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Droplets, Receipt, Home, Calendar } from "lucide-react";
+import SendEmailButton from "@/app/components/SendEmailButton";
 
 export default function ProspectDetail() {
   const { id } = useParams();
@@ -131,12 +132,17 @@ export default function ProspectDetail() {
 
         {/* Action Bar */}
         <div className="flex flex-col md:flex-row gap-4">
-           <button className="flex-1 bg-blue-900 text-white py-4 rounded-2xl font-black uppercase hover:bg-blue-800 transition-all shadow-lg active:scale-95">
+<button 
+             onClick={() => window.print()}
+             className="flex-1 bg-blue-900 text-white py-4 rounded-2xl font-black uppercase hover:bg-blue-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+           >
              Print Official PDF Report
            </button>
-           <button className="flex-1 bg-white border-2 border-blue-900 text-blue-900 py-4 rounded-2xl font-black uppercase hover:bg-blue-50 transition-all active:scale-95">
-             Resend Email to {prospect.first_name1 || "Customer"}
-           </button>
+
+ {/* Resend Email Logic using your existing component */}
+           <div className="flex-1">
+             <SendEmailButton prospect={prospect} />
+           </div>          
         </div>
       </div>
     </div>
