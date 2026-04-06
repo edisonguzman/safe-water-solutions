@@ -128,55 +128,67 @@ function PresentationViewer() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-white text-gray-900 overflow-hidden font-sans">
-      <header className="bg-blue-600 text-white p-4 shadow-md z-10">
+    <div className="flex flex-col min-h-screen w-full bg-white text-gray-900 font-sans">
+      <header className="bg-blue-600 text-white p-4 shadow-md z-10 shrink-0">
         <div className="flex justify-between items-center max-w-6xl mx-auto w-full">
-          <div className="w-24"></div>
-          <h1 className="text-xl font-bold tracking-wide">Peace of Mind in Every Drop</h1>
-          <div className="w-24 text-right">
+          <div className="w-12 md:w-24"></div>
+          <h1 className="text-lg md:text-xl font-bold tracking-wide text-center">Peace of Mind in Every Drop</h1>
+          <div className="w-12 md:w-24 text-right">
             <SignOutButton>
-              <button className="text-xs bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded">Logout</button>
+              <button className="text-[10px] md:text-xs bg-blue-700 hover:bg-blue-800 px-2 py-1 md:px-3 md:py-1 rounded">Logout</button>
             </SignOutButton>
           </div>
         </div>
       </header>
 
-      <main className="flex-grow overflow-y-auto p-6 md:p-12 flex justify-center items-center bg-gray-50">
-        <div className="w-full max-w-5xl h-full bg-white shadow-xl rounded-2xl border border-gray-100 p-8">
+      {/* Changed: 
+          1. items-start + mt-4 ensures slides don't "float" too high on portrait iPads.
+          2. p-4 on mobile/tablet to maximize slide real estate.
+      */}
+      <main className="flex-grow p-4 md:p-8 flex justify-center items-start md:items-center bg-gray-50 overflow-y-auto">
+        {/* Changed: 
+            1. max-w-4xl (896px) is the "sweet spot" for iPad landscape and portrait.
+            2. mb-24 provides a buffer so the fixed footer doesn't cover slide content.
+        */}
+        <div className="w-full max-w-4xl bg-white shadow-xl rounded-2xl border border-gray-100 p-5 md:p-10 mb-24 md:mb-0">
           {slides[currentSlideIndex]}
         </div>
       </main>
 
-      <footer className="bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-10">
-        <div className="flex justify-between items-center max-w-6xl mx-auto w-full">
+      {/* Changed: 
+          Fixed bottom on all screens ensures the salesperson always has 
+          the "Next" button visible without scrolling.
+      */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20">
+        <div className="flex justify-between items-center max-w-5xl mx-auto w-full">
           <button
             onClick={handlePrev}
             disabled={currentSlideIndex === 0}
-            className={`px-8 py-4 rounded-lg text-lg font-semibold transition-colors ${
+            className={`px-6 py-3 md:px-10 md:py-4 rounded-xl text-base md:text-lg font-bold transition-all ${
               currentSlideIndex === 0
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300"
+                ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                : "bg-gray-50 text-gray-700 border border-gray-200 active:scale-95"
             }`}
           >
-            ← Previous
+            ← Back
           </button>
 
           {currentSlideIndex === totalSlides - 1 ? (
             <button
               onClick={handleSubmitToCRM}
               disabled={isSubmitting}
-              className={`px-8 py-4 rounded-lg text-lg font-semibold text-white shadow-md transition-colors ${
-                isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 active:bg-green-800'
+              className={`px-6 py-3 md:px-10 md:py-4 rounded-xl text-base md:text-lg font-bold text-white shadow-lg transition-all active:scale-95 ${
+                isSubmitting ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'
               }`}
             >
-              {isSubmitting ? 'Saving...' : 'Send Results to CRM ✓'}
+              {isSubmitting ? 'Processing...' : 'Finish & Send ✓'}
             </button>
           ) : (
             <button
               onClick={handleNext}
-              className="px-8 py-4 rounded-lg text-lg font-semibold bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-md"
+              className="px-6 py-3 md:px-10 md:py-4 rounded-xl text-base md:text-lg font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-lg transition-all active:scale-95"
             >
-              Next →
+              Next Slide →
             </button>
           )}
         </div>
