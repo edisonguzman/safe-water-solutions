@@ -8,7 +8,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     // Support BOTH the old way (state) and the new way (prospectId)
-    const { state, savings, prospectId } = body;
+    // Also extracting monthly/yearly directly in case they are sent at top level
+    const { state, savings, prospectId, monthly, yearly } = body;
 
     let firstName1 = "";
     let firstName2 = "";
@@ -52,6 +53,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No recipient email found" }, { status: 400 });
     }
 
+    // --- MATCHING THE WORKING WEBSITE FIELDS ---
+    // This pulls the exact values that your Summary Page is already displaying correctly
+    const finalMonthly = Number(state?.financialInputs?.monthlySavings) || 
+                         Number(savings?.monthly) || 
+                         Number(state?.savings?.monthly) || 0;
+                         
+    const finalYearly = Number(state?.financialInputs?.yearlySavings) || 
+                        Number(savings?.yearly) || 
+                        Number(state?.savings?.yearly) || 
+                        (finalMonthly * 12);
+
     const { data, error } = await resend.emails.send({
       from: 'info@safewatercms.com', 
       to: [email],
@@ -83,8 +95,8 @@ export async function POST(request: Request) {
           <h2 style="color: #28a745;">Financial Impact & Savings</h2>
           <div style="background: #e9f7ef; padding: 20px; border-radius: 10px; border: 1px solid #d4edda; color: #155724;">
             <div style="font-size: 18px; font-weight: bold;">
-              Estimated Monthly Savings: $${(Number(savings?.monthly) || 0).toFixed(2)}<br/>
-              Estimated Yearly Savings: $${(Number(savings?.yearly) || 0).toFixed(2)}
+              Estimated Monthly Savings: $${finalMonthly.toFixed(2)}<br/>
+              Estimated Yearly Savings: $${finalYearly.toFixed(2)}
             </div>
           </div>
         </div>
