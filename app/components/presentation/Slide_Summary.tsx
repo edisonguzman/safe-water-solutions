@@ -11,7 +11,7 @@ export default function Slide_Summary() {
   const weeklyGrocery = state.financialInputs?.weeklyGroceryBill || 0;
   const productPct = state.financialInputs?.productPercentage || 0.15;
   const monthlyProductSpend = (weeklyGrocery * productPct) * 4;
-  const monthlyGrocerySavings = monthlyProductSpend * 0.75;
+  const monthlyGrocerySavings = monthlyProductSpend * 1;
 
   // 2. Math: Bottled Water Savings
   const weeklyBottled = state.financialInputs?.weeklyBottledWaterCost || 0;
