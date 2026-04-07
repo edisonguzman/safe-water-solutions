@@ -21,7 +21,7 @@ export default function Slide3_GrocerySavings() {
   
   const weeklyProducts = weeklyGrocery * productPct;
   const monthlySpend = weeklyProducts * 4;
-  const monthlySavings = monthlySpend * 0.75;
+  const monthlySavings = monthlySpend * 1;
 
   const productImages: Record<string, string> = {
     "Shampoos": "shampoos.jpg",
