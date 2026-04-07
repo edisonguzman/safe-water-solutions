@@ -1,46 +1,80 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
+import { sql } from "@/app/lib/db"; // Import your database tool
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { state, savings } = body;
+    // We need the ID to fetch the saved data
+    const { prospectId, savings } = body; 
 
-    // Safety check: ensure the nested objects exist
-    const prospectInfo = state?.prospectInfo || {};
-    const waterTestResults = state?.waterTestResults || {};
-    const waterSource = state?.waterSource || "City Water";
+    // 1. Fetch the LATEST data from the database
+    const prospectResult = await sql.query(
+      `SELECT * FROM prospects WHERE id = $1`, 
+      [prospectId]
+    );
+    const p = prospectResult[0];
 
-    if (!prospectInfo.email) {
+    if (!p) {
+      return NextResponse.json({ error: "Prospect not found" }, { status: 404 });
+    }
+
+    if (!p.email) {
       return NextResponse.json({ error: "Missing recipient email" }, { status: 400 });
     }
 
+    // 2. Map the Database fields (snake_case) to your variables
+    const firstName1 = p.first_name1 || 'Valued Customer';
+    const firstName2 = p.first_name2;
+    const address = p.address || 'Your Home';
+    const waterSource = p.water_source || "City Water";
+    
+    // Ensure numbers are treated as numbers
+    const hardness = p.hardness || 0;
+    const tds = p.tds || 0;
+    const ph = p.ph || 7.0;
+
     const { data, error } = await resend.emails.send({
       from: 'info@safewatercms.com', 
-      to: [prospectInfo.email],
-      subject: `Water Test Results for ${prospectInfo.address || 'Your Home'}`,
+      to: [p.email],
+      subject: `Water Test Results for ${address}`,
       html: `
-        <div style="font-family: sans-serif; color: #333; line-height: 1.6;">
-          <h1 style="color: #0052cc;">Safe Water Solutions: Your Personalized Report</h1>
-          <p>Hello ${prospectInfo.firstName1 || 'Valued Customer'}${prospectInfo.firstName2 ? ` & ${prospectInfo.firstName2}` : ''},</p>
-          <p>It was a pleasure meeting with you today. Here is a summary of the water analysis conducted at your home:</p>
+        <div style="font-family: sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: auto;">
+          <h1 style="color: #0052cc; border-bottom: 2px solid #0052cc; padding-bottom: 10px;">Safe Water Solutions Report</h1>
+          <p>Hello ${firstName1}${firstName2 ? ` & ${firstName2}` : ''},</p>
+          <p>It was a pleasure meeting with you today. Here is the official summary of the water analysis conducted at your home:</p>
           
-          <div style="background: #f4f7f9; padding: 20px; border-radius: 10px; border: 1px solid #e1e8ed;">
-            <h3 style="margin-top: 0;">Water Quality Analysis (${waterSource})</h3>
-            <ul style="list-style: none; padding: 0;">
-              <li><strong>Hardness:</strong> ${waterTestResults.hardness || 0} GPG</li>
-              <li><strong>TDS:</strong> ${waterTestResults.tds || 0} PPM</li>
-              <li><strong>pH Level:</strong> ${waterTestResults.ph || 7.0}</li>
-            </ul>
+          <div style="background: #f4f7f9; padding: 20px; border-radius: 10px; border: 1px solid #e1e8ed; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #0052cc;">Water Quality Analysis (${waterSource})</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Hardness:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right;">${hardness} GPG</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>TDS:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right;">${tds} PPM</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0;"><strong>pH Level:</strong></td>
+                <td style="padding: 8px 0; text-align: right;">${ph}</td>
+              </tr>
+            </table>
           </div>
 
           <h2 style="color: #28a745;">Financial Impact & Savings</h2>
-          <div style="font-size: 18px; font-weight: bold; color: #28a745;">
-            Estimated Monthly Savings: $${(savings?.monthly || 0).toFixed(2)}<br/>
-            Estimated Yearly Savings: $${(savings?.yearly || 0).toFixed(2)}
+          <div style="background: #e9f7ef; padding: 20px; border-radius: 10px; border: 1px solid #d4edda; color: #155724;">
+            <div style="font-size: 18px; font-weight: bold;">
+              Estimated Monthly Savings: $${(Number(savings?.monthly) || 0).toFixed(2)}<br/>
+              Estimated Yearly Savings: $${(Number(savings?.yearly) || 0).toFixed(2)}
+            </div>
           </div>
+          
+          <p style="margin-top: 30px; font-size: 12px; color: #999;">
+            This report was generated by Safe Water CMS. For questions regarding your results, please contact your sales representative.
+          </p>
         </div>
       `,
     });
