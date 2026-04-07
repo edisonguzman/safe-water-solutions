@@ -2,26 +2,18 @@
 
 import React from "react";
 import { usePresentation } from "@/app/context/PresentationContext";
-import { CheckCircle2, AlertTriangle, TrendingDown } from "lucide-react";
+import { calculateMonthlySavings } from "@/app/lib/formulas";
+import { CheckCircle2, TrendingDown } from "lucide-react";
 
 export default function Slide_Summary() {
   const { state } = usePresentation();
 
-  // 1. Math: Grocery Savings (from previous slides)
-  const weeklyGrocery = state.financialInputs?.weeklyGroceryBill || 0;
-  const productPct = state.financialInputs?.productPercentage || 0.15;
-  const monthlyProductSpend = (weeklyGrocery * productPct) * 4;
-  const monthlyGrocerySavings = monthlyProductSpend * 1;
-
-  // 2. Math: Bottled Water Savings
-  const weeklyBottled = state.financialInputs?.weeklyBottledWaterCost || 0;
-  const monthlyFilter = state.financialInputs?.monthlyFilterCost || 0;
-  const monthlyWaterSpend = (weeklyBottled * 4) + monthlyFilter;
-
-  // 3. Totals
-  const totalMonthlySavings = monthlyGrocerySavings + monthlyWaterSpend;
+  // Use the centralized formula for all math
+  const savings = calculateMonthlySavings(state);
+  
+  const totalMonthlySavings = savings.total;
   const totalYearlySavings = totalMonthlySavings * 12;
-  const tenYearSavings = totalYearlySavings * 10;
+  const tenYearSavings = totalMonthlySavings * 120;
 
   // Helper to format names
   const displayName = state.prospectInfo.firstName2 
@@ -29,7 +21,7 @@ export default function Slide_Summary() {
     : state.prospectInfo.firstName1;
 
   return (
-    <div className="h-full flex flex-col gap-6 overflow-y-auto">
+    <div className="h-full flex flex-col gap-6 overflow-y-auto pb-6">
       <div className="text-center space-y-2">
         <h2 className="text-4xl font-black text-blue-900 uppercase tracking-tight">
           Your Peace of Mind Summary
@@ -81,11 +73,16 @@ export default function Slide_Summary() {
           <div className="space-y-3 text-lg">
             <div className="flex justify-between text-green-700">
               <span>Cleaning Products:</span>
-              <span className="font-bold">${monthlyGrocerySavings.toFixed(2)}</span>
+              <span className="font-bold">${savings.soap.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-green-700">
               <span>Bottled Water/Filters:</span>
-              <span className="font-bold">${monthlyWaterSpend.toFixed(2)}</span>
+              <span className="font-bold">${savings.water.toFixed(2)}</span>
+            </div>
+            {/* Added Household Water line item */}
+            <div className="flex justify-between text-green-700">
+              <span>Household Water:</span>
+              <span className="font-bold">${savings.householdWater.toFixed(2)}</span>
             </div>
             <div className="pt-4 mt-4 border-t border-green-200 flex justify-between items-center">
               <span className="font-black text-green-900 text-xl">Total Savings:</span>
@@ -109,14 +106,13 @@ export default function Slide_Summary() {
             <p className="text-5xl font-black text-yellow-400">${tenYearSavings.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</p>
           </div>
         </div>
-        {/* Background Decal */}
         <div className="absolute -right-10 -bottom-10 opacity-10">
           <TrendingDown size={200} />
         </div>
       </div>
 
-      <p className="text-center text-gray-400 text-xs mt-4">
-        *Calculations based on provided household data and EPA water standards. 
+      <p className="text-center text-gray-400 text-[10px] leading-tight">
+        *Calculations based on provided household data of {state.prospectInfo.householdSize} persons. 
         Savings represent estimated reductions in product waste and energy efficiency.
       </p>
     </div>
