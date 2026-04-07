@@ -2,17 +2,18 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Droplets, Receipt, Home, Calendar } from "lucide-react";
+import { ArrowLeft, Droplets, Receipt, Home, Calendar, Edit2 } from "lucide-react";
 import SendEmailButton from "@/app/components/SendEmailButton";
 import EditProspectModal from "@/app/components/presentation/EditProspectModal";
-import { Edit2 } from "lucide-react"; // Import the icon
+// Import constants from your formulas file
+import { WEEKS_PER_MONTH, DAILY_MISC_SAVINGS_PER_PERSON } from "@/app/lib/formulas";
 
 export default function ProspectDetail() {
   const { id } = useParams();
   const router = useRouter();
   const [prospect, setProspect] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isEditOpen, setIsEditOpen] = useState(false); // 2. Add modal state
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   useEffect(() => {
     async function getDetails() {
@@ -34,14 +35,24 @@ export default function ProspectDetail() {
   if (loading) return <div className="p-20 text-center font-bold text-blue-900">Loading Report...</div>;
   if (!prospect) return <div className="p-20 text-center font-bold text-red-600">Report not found.</div>;
 
-  // Safety Defaults for Math
+  // --- Centralized Math (Matching Presentation) ---
   const weeklyGrocery = Number(prospect.weekly_grocery_bill) || 0;
-  const productPct = Number(prospect.product_percentage) || 0;
-  const bottledCost = Number(prospect.monthly_bottled_water_cost) || 0;
+  const productPct = Number(prospect.product_percentage) || 0.15;
+  const weeklyBottled = Number(prospect.weekly_bottled_water_cost) || 0;
   const monthlyFilter = Number(prospect.monthly_filter_cost) || 0;
+  const hSize = Number(prospect.household_size) || 1;
 
-  const monthlySoapWaste = weeklyGrocery * 4 * productPct;
-  const totalMonthlySavings = (monthlySoapWaste * 0.75) + bottledCost + monthlyFilter;
+  // 1. Soaps & Cleansers
+  const monthlySoapWaste = weeklyGrocery * productPct * WEEKS_PER_MONTH;
+  
+  // 2. Bottled Water & Filters
+  const monthlyWaterSpend = (weeklyBottled * WEEKS_PER_MONTH) + monthlyFilter;
+
+  // 3. Household Water (The restored variable)
+  const monthlyHouseholdWater = hSize * DAILY_MISC_SAVINGS_PER_PERSON * 30;
+
+  // Total Monthly Savings (Sum of all three to match Slide_Summary)
+  const totalMonthlySavings = monthlySoapWaste + monthlyWaterSpend + monthlyHouseholdWater;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -52,7 +63,7 @@ export default function ProspectDetail() {
       />
 
       {/* Top Navigation */}
-      <div className="bg-white border-b px-6 py-4 mb-8 sticky top-0 z-10">
+      <div className="bg-white border-b px-6 py-4 mb-8 sticky top-0 z-10 flex justify-between items-center">
         <button 
           onClick={() => router.back()}
           className="flex items-center gap-2 text-blue-600 font-bold hover:text-blue-800 transition-colors"
@@ -90,12 +101,11 @@ export default function ProspectDetail() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Water Quality Card */}
-<div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-  <div className="flex items-center gap-3 mb-6 text-blue-900 border-b pb-4">
-    {/* Removed <treasure size={24} /> */}
-    <Droplets size={24} />
-    <h2 className="text-xl font-black uppercase tracking-tight">Water Analysis</h2>
-  </div>
+          <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-3 mb-6 text-blue-900 border-b pb-4">
+              <Droplets size={24} />
+              <h2 className="text-xl font-black uppercase tracking-tight">Water Analysis</h2>
+            </div>
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-gray-500 font-medium">Hardness (GPG)</span>
@@ -109,12 +119,10 @@ export default function ProspectDetail() {
                 <span className="text-gray-500 font-medium">pH Level</span>
                 <span className="font-bold text-gray-900">{prospect.ph || "7.0"}</span>
               </div>
-              {prospect.chlorine && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500 font-medium">Chlorine</span>
-                  <span className="font-bold text-red-600">{prospect.chlorine} PPM</span>
-                </div>
-              )}
+              <div className="flex justify-between">
+                <span className="text-gray-500 font-medium">Chlorine</span>
+                <span className="font-bold text-red-600">{prospect.chlorine || "0"} PPM</span>
+              </div>
             </div>
           </div>
 
@@ -126,14 +134,16 @@ export default function ProspectDetail() {
             </div>
             <div className="space-y-4">
               <div className="flex justify-between text-sm">
-                <span className="text-green-700">Monthly Grocery Spend</span>
-                <span className="font-bold">${(weeklyGrocery * 4).toFixed(2)}</span>
+                <span className="text-green-700">Cleaning Products</span>
+                <span className="font-bold text-green-800">${monthlySoapWaste.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-green-700">Estimated Soap Waste</span>
-                <span className="font-bold text-red-500">
-                  -${monthlySoapWaste.toFixed(2)}
-                </span>
+                <span className="text-green-700">Bottled Water/Filters</span>
+                <span className="font-bold text-green-800">${monthlyWaterSpend.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-green-700">Household Water</span>
+                <span className="font-bold text-green-800">${monthlyHouseholdWater.toFixed(2)}</span>
               </div>
               <div className="pt-6 border-t border-green-200">
                 <p className="text-xs uppercase font-black text-green-800 tracking-widest mb-1">Total Monthly Savings</p>
@@ -147,17 +157,15 @@ export default function ProspectDetail() {
 
         {/* Action Bar */}
         <div className="flex flex-col md:flex-row gap-4">
-<button 
-             onClick={() => window.print()}
-             className="flex-1 bg-blue-900 text-white py-4 rounded-2xl font-black uppercase hover:bg-blue-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
-           >
-             Print Official PDF Report
-           </button>
-
- {/* Resend Email Logic using your existing component */}
-           <div className="flex-1">
-             <SendEmailButton prospect={prospect} />
-           </div>          
+          <button 
+            onClick={() => window.print()}
+            className="flex-1 bg-blue-900 text-white py-4 rounded-2xl font-black uppercase hover:bg-blue-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+          >
+            Print Official PDF Report
+          </button>
+          <div className="flex-1">
+            <SendEmailButton prospect={prospect} />
+          </div>          
         </div>
       </div>
     </div>
