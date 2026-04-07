@@ -18,8 +18,7 @@ export async function POST(request: Request) {
     }
 
     const { data, error } = await resend.emails.send({
-      // IMPORTANT: Use only 'onboarding@resend.dev' until your domain is verified
-      from: 'onboarding@resend.dev', 
+      from: 'info@safewatercms.com', 
       to: [prospectInfo.email],
       subject: `Water Test Results for ${prospectInfo.address || 'Your Home'}`,
       html: `
