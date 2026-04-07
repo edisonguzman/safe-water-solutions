@@ -50,8 +50,8 @@ export default async function RootLayout({
               <nav className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
                 <div className="flex items-center gap-8">
                   {/* Logo points to main Prospects page */}
-                  <Link href="/dashboard/prospects" className="text-xl font-black text-blue-900 tracking-tighter">
-                    SAFE WATER CMS
+                  <Link href="/dashboard/" className="text-xl font-black text-blue-900 tracking-tighter">
+                    Customer Management System
                   </Link>
                   
                   <div className="hidden md:flex gap-6 items-center">
