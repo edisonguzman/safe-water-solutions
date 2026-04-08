@@ -19,59 +19,39 @@ export default function Slide4_DailySavings() {
   const monthlySavings = dailyTotal * 30;
   const yearlySavings = monthlySavings * 12;
 
+  const displayImages = [
+    { src: "smoother-skin.jpg", alt: "Smoother skin", label: "Smoother Skin" },
+    { src: "bright-laundry.jpg", alt: "Bright laundry", label: "Brighter Clothes" },
+    { src: "spotless-dishes.jpg", alt: "Spotless dishes", label: "Reduced Streaks" },
+    { src: "coffee.jpg", alt: "Better coffee", label: "Improved Taste" },
+    { src: "plumbing-appliances.jpg", alt: "Plumbing and appliances", label: "Savings on Plumbing" },
+    { src: "cleaners.jpg", alt: "Cleaning supplies", label: "Save on Cleaning Products" },
+  ];
+
   return (
     <div className="h-full flex flex-col md:flex-row gap-8 overflow-y-auto pb-8">
       
-      {/* Left Column: Visuals & Savings Percentages */}
+      {/* Left Column: Visuals */}
       <div className="w-full md:w-1/2 flex flex-col gap-6">
         <h2 className="text-3xl font-bold text-blue-900 leading-tight">
           The value of treated water travels  
           <span className="text-blue-600"> throughout your entire home.</span>
         </h2>
         
-        {/* Savings Breakdown Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center text-center">
-            
+        {/* Two-column, Three-row Grid Layout with Labels */}
+        <div className="grid grid-cols-2 gap-4 mt-2">
+          {displayImages.map((img, index) => (
+            <div key={index} className="bg-gray-50 p-2 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center">
               <img 
-  src="/images/presentation/water-heater.jpg" 
-  alt="Water heater" 
-  className="w-full h-full object-cover rounded-xl"
-/>
-            
-            <span className="font-semibold text-gray-800 text-sm">Energy savings on water heaters:</span>
-            <span className="text-blue-600 font-bold mt-1">Electric: 21% | Gas: 29%</span>
-          </div>
-
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center text-center">
-            <img 
-  src="/images/presentation/clothing-linen.jpg" 
-  alt="Clthing Linen" 
-  className="w-full h-full object-cover rounded-xl"
-/>
-            <span className="font-semibold text-gray-800 text-sm">Savings on all linens & clothing:</span>
-            <span className="text-blue-600 font-bold mt-1">15 - 30%</span>
-          </div>
-
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center text-center">
-           <img 
-  src="/images/presentation/plumbing.jpg" 
-  alt="Plumbing" 
-  className="w-full h-full object-cover rounded-xl"
-/>
-            <span className="font-semibold text-gray-800 text-sm">Replacement plumbing & fixtures:</span>
-            <span className="text-blue-600 font-bold mt-1">25 - 75%</span>
-          </div>
-
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center text-center">
-             <img 
-  src="/images/presentation/shaving.jpg" 
-  alt="Shaving" 
-  className="w-full h-full object-cover rounded-xl"
-/>
-            <span className="font-semibold text-gray-800 text-sm">Extended razor blade life:</span>
-            <span className="text-blue-600 font-bold mt-1">50 - 66%</span>
-          </div>
+                src={`/images/presentation/${img.src}`} 
+                alt={img.alt} 
+                className="w-full h-32 sm:h-40 md:h-36 lg:h-44 object-cover rounded-lg"
+              />
+              <span className="mt-2 text-sm font-semibold text-gray-700 text-center">
+                {img.label}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
 

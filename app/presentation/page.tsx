@@ -65,10 +65,10 @@ function PresentationViewer() {
     <HomeownerPriorities key="priorities" />, // Slide 12
     <ValueAffordability key="value-afford" onNext={handleNext} />, // Slide 13
     <CostComparison key="cost-comparison" />, // Slide 14
-    <Slide_HomeBenefits key="s_benefits" onNext={handleNext} />,
-    <Slide_Summary key="summary" />,
-    <Slide5_Summary key="s9" />,
-    <SendReport key="send-report" onNext={handleNext} />,
+    <Slide_HomeBenefits key="s_benefits" onNext={handleNext} />, // Slide 15
+    <Slide_Summary key="summary" />, // Slide 16
+    <Slide5_Summary key="s9" />, // Slide 17
+    <SendReport key="send-report" onNext={handleNext} />, // Slide 18
     
   ];
 
