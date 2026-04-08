@@ -7,7 +7,10 @@ export default function SalesRow({ prospect }: { prospect: any }) {
   const [loading, setLoading] = useState(false);
 
   const sources = ["EDDM","Email","FB/Insta advertising","HomeShows","Google Business Profile","Inhouse calls","Lawn Signs","Lead Trees","HD Lead trees","L Lead trees","Lead Trees other location","Postcards","PPC Ads","Rack cards","Referral","Social Organic","Vehicle lettering","Website","Workshops","WTA","Other"];
-  const finances = ["Preferred Credit", "Synchrony", "Check", "Cash", "Credit Card", "Other"];
+  
+  // Updated finances array to include ISPC
+  const finances = ["ISPC", "Preferred Credit", "Synchrony", "Check", "Cash", "Credit Card", "Other"];
+  
   const statuses = ["Funded", "Canceled", "Not Qualified", "Other"];
 
   // AUTO-FORMULA: Percentage calculation
