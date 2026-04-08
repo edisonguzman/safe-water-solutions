@@ -79,9 +79,9 @@ export default function Slide_Summary() {
               <span>Bottled Water/Filters:</span>
               <span className="font-bold">${savings.water.toFixed(2)}</span>
             </div>
-            {/* Added Household Water line item */}
+            {/* Changed Household Water to Wear and Tear line item */}
             <div className="flex justify-between text-green-700">
-              <span>Household Water:</span>
+              <span>Wear and Tear:</span>
               <span className="font-bold">${savings.householdWater.toFixed(2)}</span>
             </div>
             <div className="pt-4 mt-4 border-t border-green-200 flex justify-between items-center">

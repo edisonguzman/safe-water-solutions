@@ -60,7 +60,7 @@ export const WaterReportEmail = ({
             <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: 'bold' }}>${savings.water.toFixed(2)}</td>
           </tr>
           <tr>
-            <td style={{ padding: '8px 0', color: '#15803d', borderBottom: '1px solid #bbf7d0' }}>Household Water Impact:</td>
+            <td style={{ padding: '8px 0', color: '#15803d', borderBottom: '1px solid #bbf7d0' }}>Wear and Tear Impact:</td>
             <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: 'bold', borderBottom: '1px solid #bbf7d0' }}>${savings.household.toFixed(2)}</td>
           </tr>
           <tr>

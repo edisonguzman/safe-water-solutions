@@ -13,8 +13,8 @@ export default function HardWaterDefinition({ onNext }: HardWaterDefinitionProps
         
         {/* Left Column: Title/Text */}
         <div className="flex flex-col space-y-6 text-left">
-          <h2 className="text-xl md:text-4xl font-black text-blue-900 tracking-tight leading-tight">
-            Hard Water is Water That Has High Concentration of Minerals.
+          <h2 className="text-xl md:text-5xl font-black text-blue-900 tracking-tight leading-tight">
+            Contaminants in Water
           </h2>
          
           
