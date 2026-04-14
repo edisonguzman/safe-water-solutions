@@ -145,15 +145,25 @@ function PresentationViewer() {
           1. items-start + mt-4 ensures slides don't "float" too high on portrait iPads.
           2. p-4 on mobile/tablet to maximize slide real estate.
       */}
-      <main className="flex-grow p-4 md:p-8 flex justify-center items-start md:items-center bg-gray-50 overflow-y-auto">
-        {/* Changed: 
-            1. max-w-4xl (896px) is the "sweet spot" for iPad landscape and portrait.
-            2. mb-24 provides a buffer so the fixed footer doesn't cover slide content.
-        */}
-        <div className="w-full max-w-4xl bg-white shadow-xl rounded-2xl border border-gray-100 p-5 md:p-10 mb-24 md:mb-0">
-          {slides[currentSlideIndex]}
-        </div>
-      </main>
+<main 
+  className="flex-grow p-4 md:p-8 flex justify-center items-start md:items-center overflow-y-auto"
+  style={{
+    // Reduced white overlay from 0.8 to 0.3 to make the image "pop"
+    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3)), url('/images/presentation/Slide-1.jpg')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'fixed'
+  }}
+>
+  {/* We use a solid bg-white here. 
+      Since the background is now more "pronounced," 
+      a solid white card provides the best contrast for iPad viewing.
+  */}
+  <div className="w-full max-w-4xl bg-white shadow-2xl rounded-2xl border border-gray-200 p-5 md:p-10 mb-24 md:mb-0">
+    {slides[currentSlideIndex]}
+  </div>
+</main>
 
       {/* Changed: 
           Fixed bottom on all screens ensures the salesperson always has 

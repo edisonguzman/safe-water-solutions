@@ -20,8 +20,7 @@ export default function IssuesAgreement({ onNext }: IssuesAgreementProps) {
   return (
     <div 
       className="h-full w-full flex flex-col items-center justify-center text-center relative"
-      style={{ 
-        backgroundImage: "url('/images/presentation/background.jpg')",
+      style={{    
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}
