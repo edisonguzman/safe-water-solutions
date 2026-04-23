@@ -11,7 +11,7 @@ export default function ValueAffordability({ onNext }: ValueAffordabilityProps) 
     "Need",
     "Equipment",
     "Value",
-    "Warrantee"
+    "Warranty"
   ];
 
   return (
