@@ -19,6 +19,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Safe Water CMS",
   description: "Interactive Sales & Water Testing Platform",
+  manifest: "/manifest.json", 
   icons: {
     icon: "/favicon.ico",
     apple: [
